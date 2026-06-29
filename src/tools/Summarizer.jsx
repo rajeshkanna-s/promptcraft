@@ -217,8 +217,8 @@ export default function Summarizer() {
             id="sum-instructions"
             value={instructions}
             onChange={(e) => setInstructions(e.target.value)}
-            rows={5}
-            className={fieldClass}
+            rows={3}
+            className={`${fieldClass} resize-y`}
           />
         </div>
 

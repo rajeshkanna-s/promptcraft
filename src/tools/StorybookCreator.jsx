@@ -18,12 +18,18 @@ const GENRES = [
   'Funny',
 ];
 const PAGE_OPTIONS = [4, 6, 8, 10, 12];
+const PAGE_LENGTHS = [
+  { id: 'short', label: 'Short (1-2 sentences)', instruction: '1-2 short, simple sentences' },
+  { id: 'medium', label: 'Medium (3-4 sentences)', instruction: '3-4 sentences' },
+  { id: 'long', label: 'Long (5-7 sentences)', instruction: '5-7 rich, descriptive sentences' },
+];
 
 export default function StorybookCreator() {
   const [idea, setIdea] = useState('');
   const [audience, setAudience] = useState('Kids (5-8)');
   const [genre, setGenre] = useState('Adventure');
   const [pages, setPages] = useState(6);
+  const [pageLength, setPageLength] = useState('medium');
   const [language, setLanguage] = useState('English');
 
   const [loading, setLoading] = useState(false);
@@ -50,7 +56,9 @@ export default function StorybookCreator() {
           '_A short one-line tagline._\n\n' +
           `Then exactly ${pages} pages. For each page use:\n` +
           '## Page <n>\n' +
-          '<2-4 sentences of story text appropriate for the audience>\n\n' +
+          `<${
+            PAGE_LENGTHS.find((l) => l.id === pageLength)?.instruction || '3-4 sentences'
+          } of story text appropriate for the audience>\n\n` +
           '**Illustration:** <a vivid image-generation prompt describing the scene, characters, ' +
           'setting, art style and mood>\n\n' +
           'Keep characters and style consistent across pages. End with a warm, satisfying ' +
@@ -91,7 +99,7 @@ export default function StorybookCreator() {
           className={fieldClass}
         />
 
-        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <label htmlFor="story-audience" className={labelClass}>
               Audience
@@ -139,6 +147,23 @@ export default function StorybookCreator() {
               {PAGE_OPTIONS.map((p) => (
                 <option key={p} value={p}>
                   {p} pages
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="story-page-length" className={labelClass}>
+              Length per page
+            </label>
+            <select
+              id="story-page-length"
+              value={pageLength}
+              onChange={(e) => setPageLength(e.target.value)}
+              className={fieldClass}
+            >
+              {PAGE_LENGTHS.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.label}
                 </option>
               ))}
             </select>
