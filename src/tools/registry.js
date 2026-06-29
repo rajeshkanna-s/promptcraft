@@ -3,6 +3,7 @@ import BlogWriter from './BlogWriter.jsx';
 import Summarizer from './Summarizer.jsx';
 import TextHumanizer from './TextHumanizer.jsx';
 import StorybookCreator from './StorybookCreator.jsx';
+import { YOUTUBE_TOOLS } from './youtubeTools.jsx';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tool registry
@@ -51,6 +52,8 @@ export const TOOLS = [
     component: StorybookCreator,
     available: true,
   },
+  // ── YouTube Tools (config-driven, see youtubeTools.jsx) ──
+  ...YOUTUBE_TOOLS,
 ];
 
 export const getTool = (id) => TOOLS.find((t) => t.id === id);
