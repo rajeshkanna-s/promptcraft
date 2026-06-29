@@ -1,4 +1,4 @@
-import { Wand2, RefreshCw, AlertCircle, Type, Image, Video } from 'lucide-react';
+import { Wand2, RefreshCw, AlertCircle, Type, Image, Video, Sparkles, Shuffle, Loader2 } from 'lucide-react';
 import {
   PROMPT_TYPES,
   TYPE_OPTIONS,
@@ -10,6 +10,23 @@ import {
 
 // Icon per category, keyed by id.
 const TYPE_ICONS = { text: Type, image: Image, video: Video };
+
+// Quick-start example seeds shown as clickable chips.
+const EXAMPLES = ['sunset beach', 'a cat detective', 'REST API in Go', 'cozy coffee shop'];
+
+// Random ideas for the "Surprise me" button.
+const SURPRISE_IDEAS = [
+  'a lighthouse keeper who collects storms',
+  'neon cyberpunk street market at night',
+  'a productivity app for procrastinators',
+  'time-travelling food critic',
+  'a dragon who is afraid of fire',
+  'minimalist logo for a space tea brand',
+  'underwater city powered by jellyfish',
+  'a detective novel set on Mars',
+  'retro 80s synthwave album cover',
+  'a polite robot learning to garden',
+];
 
 // Shared <select> styling.
 const selectClass =
@@ -35,6 +52,8 @@ export default function InputPanel({
   setCustomChars,
   onGenerate,
   onRegenerate,
+  onEnhance,
+  enhancing,
   loading,
   error,
   canRegenerate,
@@ -50,6 +69,17 @@ export default function InputPanel({
     onGenerate();
   };
 
+  // ⌘/Ctrl+Enter generates from anywhere in the input.
+  const handleKeyDown = (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      onGenerate();
+    }
+  };
+
+  const surpriseMe = () =>
+    setInput(SURPRISE_IDEAS[Math.floor(Math.random() * SURPRISE_IDEAS.length)]);
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -59,16 +89,54 @@ export default function InputPanel({
       <label htmlFor="idea" className={labelClass}>
         Your idea
       </label>
-      <input
-        id="idea"
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder='e.g. "sunset beach", "a cat detective", "REST API in Go"'
-        maxLength={200}
-        autoComplete="off"
-        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-900"
-      />
+      <div className="relative">
+        <input
+          id="idea"
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder='e.g. "sunset beach", "a cat detective", "REST API in Go"'
+          maxLength={200}
+          autoComplete="off"
+          autoFocus
+          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-32 text-base text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-indigo-500 dark:focus:ring-indigo-900"
+        />
+        {/* Enhance my idea */}
+        <button
+          type="button"
+          onClick={onEnhance}
+          disabled={enhancing || loading}
+          title="Let AI expand your idea into a richer brief"
+          className="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-2.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:from-indigo-600 hover:to-fuchsia-600 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {enhancing ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+          Enhance
+        </button>
+      </div>
+
+      {/* Example chips + Surprise me */}
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        <span className="text-xs text-slate-400 dark:text-slate-500">Try:</span>
+        {EXAMPLES.map((ex) => (
+          <button
+            key={ex}
+            type="button"
+            onClick={() => setInput(ex)}
+            className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs font-medium text-slate-600 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/40"
+          >
+            {ex}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={surpriseMe}
+          className="inline-flex items-center gap-1 rounded-full border border-fuchsia-200 bg-fuchsia-50 px-2.5 py-0.5 text-xs font-semibold text-fuchsia-700 transition hover:bg-fuchsia-100 dark:border-fuchsia-900/60 dark:bg-fuchsia-950/40 dark:text-fuchsia-300"
+        >
+          <Shuffle size={12} /> Surprise me
+        </button>
+      </div>
+
       <div className="mt-1.5 flex justify-between text-xs text-slate-400 dark:text-slate-500">
         <span>{activeType?.hint}</span>
         <span>

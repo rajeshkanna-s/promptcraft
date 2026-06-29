@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { PanelRightOpen } from 'lucide-react';
 import InputPanel from '../components/InputPanel.jsx';
 import ResultEditor from '../components/ResultEditor.jsx';
+import PromptResults from '../components/PromptResults.jsx';
 import LoadingResult from '../components/LoadingResult.jsx';
 import Sidebar from '../components/Sidebar.jsx';
-import { Lightbulb } from 'lucide-react';
-import { generatePrompts } from '../lib/api.js';
+import { Lightbulb, LayoutGrid, PencilLine, CopyCheck, Check } from 'lucide-react';
+import { generatePrompts, enhanceIdea, transformPrompt } from '../lib/api.js';
 import { PROMPT_TYPES } from '../lib/constants.js';
 import {
   loadHistory,
@@ -57,8 +58,13 @@ export default function GeneratorPage() {
   // ── Results state ──
   const [prompts, setPrompts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [enhancing, setEnhancing] = useState(false);
   const [error, setError] = useState('');
   const [resultMeta, setResultMeta] = useState({ input: '', type: 'text', tone: 'none' });
+  const [instantReveal, setInstantReveal] = useState(false); // skip typewriter for history reloads
+  const [busyIndex, setBusyIndex] = useState(-1); // which card is running a per-prompt action
+  const [view, setView] = useState('cards'); // 'cards' | 'editor'
+  const [copiedAll, setCopiedAll] = useState(false);
 
   // ── Persisted collections ──
   const [history, setHistory] = useState([]);
@@ -102,7 +108,16 @@ export default function GeneratorPage() {
         customChars: opts.customChars,
       });
       setPrompts(result);
-      setResultMeta({ input: idea, type: opts.type, tone: opts.tone });
+      setInstantReveal(false); // animate freshly generated prompts
+      setResultMeta({
+        input: idea,
+        type: opts.type,
+        typeOptions: opts.typeOptions,
+        tone: opts.tone,
+        length: opts.length,
+        customChars: opts.customChars,
+        count: opts.count,
+      });
 
       const batch = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -127,6 +142,59 @@ export default function GeneratorPage() {
   const handleGenerate = () => runGeneration();
   const handleRegenerate = () => runGeneration();
 
+  // Expand the short seed idea into a richer brief.
+  const handleEnhance = async () => {
+    const idea = input.trim();
+    if (!idea) {
+      setError('Enter an idea to enhance first.');
+      return;
+    }
+    setEnhancing(true);
+    setError('');
+    try {
+      setInput(await enhanceIdea(idea));
+    } catch (err) {
+      setError(err.message || 'Could not enhance the idea.');
+    } finally {
+      setEnhancing(false);
+    }
+  };
+
+  // Per-prompt action: regenerate / longer / shorter / translate one card.
+  const handlePromptAction = async (index, action, language) => {
+    setBusyIndex(index);
+    setError('');
+    try {
+      const next = await transformPrompt({
+        action,
+        language,
+        prompt: prompts[index],
+        input: resultMeta.input,
+        type: resultMeta.type,
+        typeOptions: resultMeta.typeOptions,
+        tone: resultMeta.tone,
+        length: resultMeta.length,
+        customChars: resultMeta.customChars,
+      });
+      setInstantReveal(false);
+      setPrompts((prev) => prev.map((p, i) => (i === index ? next : p)));
+    } catch (err) {
+      setError(err.message || 'That action failed. Please try again.');
+    } finally {
+      setBusyIndex(-1);
+    }
+  };
+
+  const handleCopyAll = async () => {
+    try {
+      await navigator.clipboard.writeText(prompts.join('\n\n'));
+      setCopiedAll(true);
+      setTimeout(() => setCopiedAll(false), 1500);
+    } catch {
+      /* ignore */
+    }
+  };
+
   const handleReloadBatch = (batch) => {
     setInput(batch.input);
     setType(batch.type);
@@ -136,7 +204,16 @@ export default function GeneratorPage() {
     setLength(batch.length || 'medium');
     setCustomChars(batch.customChars || CUSTOM_LENGTH.default);
     setPrompts(batch.prompts);
-    setResultMeta({ input: batch.input, type: batch.type, tone: batch.tone });
+    setInstantReveal(true); // show history instantly, no typewriter
+    setResultMeta({
+      input: batch.input,
+      type: batch.type,
+      typeOptions: batch.typeOptions || defaultTypeOptions(batch.type),
+      tone: batch.tone,
+      length: batch.length || 'medium',
+      customChars: batch.customChars || CUSTOM_LENGTH.default,
+      count: batch.count,
+    });
     setError('');
   };
 
@@ -191,6 +268,8 @@ export default function GeneratorPage() {
             setCustomChars={setCustomChars}
             onGenerate={handleGenerate}
             onRegenerate={handleRegenerate}
+            onEnhance={handleEnhance}
+            enhancing={enhancing}
             loading={loading}
             error={error}
             canRegenerate={Boolean(resultMeta.input)}
@@ -200,7 +279,67 @@ export default function GeneratorPage() {
             {loading ? (
               <LoadingResult label="Generating your prompts" />
             ) : prompts.length ? (
-              <ResultEditor content={promptsToHtml(prompts, resultMeta)} />
+              <div>
+                {/* Result toolbar: copy all + view toggle */}
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {prompts.length} {prompts.length === 1 ? 'prompt' : 'prompts'} ready
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleCopyAll}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                    >
+                      {copiedAll ? (
+                        <Check size={14} className="text-emerald-500" />
+                      ) : (
+                        <CopyCheck size={14} />
+                      )}
+                      {copiedAll ? 'Copied' : 'Copy all'}
+                    </button>
+                    <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => setView('cards')}
+                        aria-pressed={view === 'cards'}
+                        className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition ${
+                          view === 'cards'
+                            ? 'bg-indigo-600 text-white shadow-sm'
+                            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        <LayoutGrid size={13} /> Cards
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setView('editor')}
+                        aria-pressed={view === 'editor'}
+                        className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition ${
+                          view === 'editor'
+                            ? 'bg-indigo-600 text-white shadow-sm'
+                            : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        <PencilLine size={13} /> Editor
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {view === 'cards' ? (
+                  <PromptResults
+                    prompts={prompts}
+                    instant={instantReveal}
+                    isFavorite={isFavorite}
+                    onToggleFavorite={toggleFavorite}
+                    onAction={handlePromptAction}
+                    busyIndex={busyIndex}
+                  />
+                ) : (
+                  <ResultEditor content={promptsToHtml(prompts, resultMeta)} />
+                )}
+              </div>
             ) : (
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/50 px-6 py-16 text-center dark:border-slate-700 dark:bg-slate-900/40">
                 <span className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-300">

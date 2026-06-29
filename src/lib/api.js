@@ -271,3 +271,66 @@ export async function generatePrompts({ input, count, type, tone, length, custom
   }
   return prompts;
 }
+
+const stripQuotes = (s) => s.trim().replace(/^["'`]+|["'`]+$/g, '').trim();
+
+/**
+ * Expand a short, vague seed into a richer, more specific one-line idea brief.
+ * Used by the "Enhance my idea" button.
+ */
+export async function enhanceIdea(idea) {
+  const raw = await generateText({
+    system:
+      'You turn a short, vague idea into ONE richer, more specific and evocative idea brief ' +
+      '(under 25 words) that will produce noticeably better AI prompts. Respond with ONLY the ' +
+      'improved idea text — no quotes, no preamble, no list, no options.',
+    user: `Idea: ${idea}`,
+    maxTokens: 120,
+    temperature: 0.9,
+  });
+  return stripQuotes(raw) || idea;
+}
+
+/**
+ * Transform a single existing prompt: regenerate a fresh one, or rewrite it
+ * longer / shorter / translated. Returns the new prompt string.
+ */
+export async function transformPrompt({
+  action,
+  prompt,
+  language,
+  // settings used when regenerating a fresh single prompt
+  input,
+  type,
+  typeOptions,
+  tone,
+  length,
+  customChars,
+}) {
+  if (action === 'regenerate') {
+    const out = await generatePrompts({
+      input,
+      count: 1,
+      type,
+      typeOptions,
+      tone,
+      length,
+      customChars,
+    });
+    return out[0];
+  }
+
+  const instruction = {
+    longer: 'Rewrite this prompt to be noticeably longer and more detailed, preserving its intent.',
+    shorter: 'Rewrite this prompt to be more concise while keeping its core intent.',
+    translate: `Translate this prompt into ${language}, preserving meaning and detail.`,
+  }[action];
+
+  const out = await generateText({
+    system: `You edit AI prompts. ${instruction} Respond with ONLY the resulting prompt text — no quotes, no preamble, no explanation.`,
+    user: prompt,
+    maxTokens: 1400,
+    temperature: 0.7,
+  });
+  return stripQuotes(out) || prompt;
+}
