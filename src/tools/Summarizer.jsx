@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { FileText, Upload, Info } from 'lucide-react';
 import { generateText } from '../lib/api.js';
+import { mdToHtml } from '../lib/markdown.js';
+import ResultEditor from '../components/ResultEditor.jsx';
+import LoadingResult from '../components/LoadingResult.jsx';
 import {
   ToolHeader,
   ToolError,
   ToolButton,
-  ToolResult,
   fieldClass,
   labelClass,
   LANGUAGES,
@@ -240,9 +242,29 @@ export default function Summarizer() {
         </div>
       </form>
 
-      <div className="mt-6">
-        <ToolResult text={summary} title="Summary" filename="summary" />
-      </div>
+      {loading ? (
+        <div className="mt-6">
+          <LoadingResult
+            title="Summary"
+            label="Summarizing your text"
+            messages={[
+              'Reading the transcript…',
+              'Identifying key points…',
+              'Organizing the highlights…',
+              'Writing the summary…',
+            ]}
+          />
+        </div>
+      ) : summary ? (
+        <div className="mt-6">
+          <ResultEditor
+            content={mdToHtml(summary)}
+            title="Summary"
+            filename="summary"
+            placeholder="Your summary will appear here…"
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

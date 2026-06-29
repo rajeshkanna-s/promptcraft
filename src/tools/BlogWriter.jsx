@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { PenLine, Sparkles } from 'lucide-react';
 import { generateText } from '../lib/api.js';
+import { mdToHtml } from '../lib/markdown.js';
+import ResultEditor from '../components/ResultEditor.jsx';
+import LoadingResult from '../components/LoadingResult.jsx';
 import {
   ToolHeader,
   ToolError,
   ToolButton,
-  ToolResult,
   fieldClass,
   labelClass,
   LANGUAGES,
@@ -217,9 +219,30 @@ export default function BlogWriter() {
         </div>
       </form>
 
-      <div className="mt-6">
-        <ToolResult text={post} title="Your blog post" filename="blog-post" />
-      </div>
+      {loading ? (
+        <div className="mt-6">
+          <LoadingResult
+            title="Your blog post"
+            label="Writing your blog post"
+            messages={[
+              'Researching the topic…',
+              'Outlining the structure…',
+              'Drafting the sections…',
+              'Refining the wording…',
+              'Final polish…',
+            ]}
+          />
+        </div>
+      ) : post ? (
+        <div className="mt-6">
+          <ResultEditor
+            content={mdToHtml(post)}
+            title="Your blog post"
+            filename="blog-post"
+            placeholder="Your blog post will appear here…"
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

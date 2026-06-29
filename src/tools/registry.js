@@ -1,6 +1,8 @@
 import { PenLine, FileText, Wand2, BookOpen } from 'lucide-react';
 import BlogWriter from './BlogWriter.jsx';
 import Summarizer from './Summarizer.jsx';
+import TextHumanizer from './TextHumanizer.jsx';
+import StorybookCreator from './StorybookCreator.jsx';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tool registry
@@ -31,24 +33,23 @@ export const TOOLS = [
     component: Summarizer,
     available: true,
   },
-  // ── Planned tools (UI placeholders until built) ──
   {
     id: 'text-humanizer',
     name: 'Text Humanizer',
     description: 'Make AI-generated text sound natural and human',
     category: 'Writing',
     icon: Wand2,
-    component: null,
-    available: false,
+    component: TextHumanizer,
+    available: true,
   },
   {
     id: 'storybook-creator',
     name: 'Storybook Creator',
-    description: 'Turn an idea into an illustrated story outline',
+    description: 'Turn an idea into an illustrated story, page by page',
     category: 'Creative',
     icon: BookOpen,
-    component: null,
-    available: false,
+    component: StorybookCreator,
+    available: true,
   },
 ];
 

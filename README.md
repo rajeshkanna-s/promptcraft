@@ -15,7 +15,12 @@ PromptCraft is a two-page app (client-side routing via `HashRouter`):
   - **Blog Writer** — AI title suggestions + full Markdown blog posts.
   - **AI Summarizer** — summarize pasted text / `.txt` transcripts with selectable
     templates (Key Highlights, Detailed Notes, Action Items, …).
-  - _Coming soon:_ Text Humanizer, Storybook Creator (shown greyed-out).
+  - **Text Humanizer** — rewrite AI-sounding text to read naturally (strength + tone).
+  - **Storybook Creator** — turn an idea into a page-by-page illustrated story
+    (story text + an illustration prompt per page).
+
+  Every tool renders its output in the same editable rich-text result panel as the
+  generator (edit, copy, download .md/.txt/.html).
 
   > Audio/video & YouTube transcription require a speech-to-text backend and are
   > not wired into the summarizer; it works on text/transcripts.

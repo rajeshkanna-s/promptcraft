@@ -201,7 +201,7 @@ export default function GeneratorPage() {
 
           <section ref={resultRef} className="scroll-mt-24">
             {loading ? (
-              <LoadingResult />
+              <LoadingResult label="Generating your prompts" />
             ) : prompts.length ? (
               <ResultEditor content={promptsToHtml(prompts, resultMeta)} />
             ) : (

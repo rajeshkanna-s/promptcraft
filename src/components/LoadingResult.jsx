@@ -1,29 +1,33 @@
 import { useEffect, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 
-const MESSAGES = [
+const DEFAULT_MESSAGES = [
   'Warming up the model…',
   'Brainstorming fresh ideas…',
-  'Crafting vivid, specific prompts…',
+  'Crafting vivid, specific output…',
   'Layering in the details…',
   'Polishing the final wording…',
 ];
 
 // Animated "thinking" panel shown while a generation is in flight.
-export default function LoadingResult() {
+export default function LoadingResult({
+  title = 'Your Result',
+  label = 'Generating…',
+  messages = DEFAULT_MESSAGES,
+}) {
   const [msgIndex, setMsgIndex] = useState(0);
 
   // Cycle through friendly status messages every ~2s.
   useEffect(() => {
-    const id = setInterval(() => setMsgIndex((i) => (i + 1) % MESSAGES.length), 2000);
+    const id = setInterval(() => setMsgIndex((i) => (i + 1) % messages.length), 2000);
     return () => clearInterval(id);
-  }, []);
+  }, [messages.length]);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       {/* Header mirrors the result panel */}
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5 dark:border-slate-800">
-        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Your Result</h3>
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">{title}</h3>
         <span className="flex items-center gap-1">
           <Dot delay="0ms" />
           <Dot delay="150ms" />
@@ -39,11 +43,9 @@ export default function LoadingResult() {
             <Sparkles size={26} className="animate-pulse" />
           </span>
         </span>
-        <p className="text-base font-semibold text-slate-800 dark:text-slate-100">
-          Generating your prompts
-        </p>
+        <p className="text-base font-semibold text-slate-800 dark:text-slate-100">{label}</p>
         <p key={msgIndex} className="pc-fade mt-1 text-sm text-slate-500 dark:text-slate-400">
-          {MESSAGES[msgIndex]}
+          {messages[msgIndex]}
         </p>
 
         {/* Shimmer placeholder lines */}
