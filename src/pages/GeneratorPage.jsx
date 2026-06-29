@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { PanelRightOpen } from 'lucide-react';
 import InputPanel from '../components/InputPanel.jsx';
-import ResultsGrid from '../components/ResultsGrid.jsx';
+import ResultEditor from '../components/ResultEditor.jsx';
+import SkeletonCard from '../components/SkeletonCard.jsx';
 import Sidebar from '../components/Sidebar.jsx';
-import Footer from '../components/Footer.jsx';
+import { Lightbulb } from 'lucide-react';
 import { generatePrompts } from '../lib/api.js';
+import { PROMPT_TYPES } from '../lib/constants.js';
 import {
   loadHistory,
   saveBatch,
@@ -13,6 +15,29 @@ import {
   saveFavorites,
 } from '../lib/storage.js';
 import { CUSTOM_LENGTH, defaultTypeOptions } from '../lib/constants.js';
+
+const escapeHtml = (s) =>
+  s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+// Render a batch of prompts into editor-ready HTML.
+function promptsToHtml(prompts, meta) {
+  if (!prompts.length) return '';
+  const typeLabel = (PROMPT_TYPES.find((t) => t.id === meta.type)?.label || '').toLowerCase();
+  const noun = `${typeLabel ? typeLabel + ' ' : ''}prompt${prompts.length === 1 ? '' : 's'}`;
+  const intro = `Here ${prompts.length === 1 ? 'is' : 'are'} ${prompts.length} ${noun}${
+    meta.input ? ` based on "${escapeHtml(meta.input)}"` : ''
+  }:`;
+  const body = prompts
+    .map(
+      (p, i) =>
+        `<p><strong>Prompt ${i + 1}:</strong></p><p>${escapeHtml(p)}</p>`,
+    )
+    .join('');
+  return `<p>${intro}</p>${body}`;
+}
 
 // The original PromptCraft prompt-generator, now a routed page at "/".
 export default function GeneratorPage() {
@@ -166,18 +191,31 @@ export default function GeneratorPage() {
           />
 
           <section>
-            <ResultsGrid
-              prompts={prompts}
-              loading={loading}
-              count={count}
-              isFavorite={isFavorite}
-              onToggleFavorite={toggleFavorite}
-            />
+            {loading ? (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {Array.from({ length: count }).map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
+              </div>
+            ) : prompts.length ? (
+              <ResultEditor content={promptsToHtml(prompts, resultMeta)} />
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/50 px-6 py-16 text-center dark:border-slate-700 dark:bg-slate-900/40">
+                <span className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-300">
+                  <Lightbulb size={22} />
+                </span>
+                <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
+                  No prompts yet
+                </h3>
+                <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
+                  Type an idea above, pick a type and tone, then hit{' '}
+                  <span className="font-medium text-indigo-600 dark:text-indigo-400">Generate</span>.
+                </p>
+              </div>
+            )}
           </section>
         </div>
       </main>
-
-      <Footer prompts={prompts} meta={resultMeta} />
 
       <Sidebar
         open={sidebarOpen}

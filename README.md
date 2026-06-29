@@ -29,7 +29,9 @@ PromptCraft is a two-page app (client-side routing via `HashRouter`):
   - **Video** → aspect ratio + duration + camera motion
 - **Length** presets (Short / Medium / Long) or a **Custom** target up to 4000 chars
 - **Tone** modifier that reshapes the system prompt
-- Per-card **Copy** and **Star** (favorite) buttons, plus **Copy All**
+- Results shown in a **rich-text editor** ("Your Result") — a TipTap toolbar
+  (headings, bold/italic/strike, lists, task list, quote, table, image, link,
+  code) lets you **edit** the output, then **Copy** or **Download** (.md/.txt/.html)
 - **Regenerate** a fresh batch without retyping
 - **History** of the last 20 batches (localStorage) — click to reload
 - **Favorites** list (localStorage)

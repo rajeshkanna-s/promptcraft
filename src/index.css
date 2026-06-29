@@ -20,6 +20,140 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ── TipTap rich-text editor content styling (Tailwind v4 resets defaults) ── */
+.pc-editor {
+  color: rgb(51 65 85);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.dark .pc-editor {
+  color: rgb(203 213 225);
+}
+.pc-editor:focus {
+  outline: none;
+}
+.pc-editor h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0.8em 0 0.4em;
+  color: rgb(15 23 42);
+}
+.pc-editor h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0.7em 0 0.35em;
+  color: rgb(15 23 42);
+}
+.dark .pc-editor h1,
+.dark .pc-editor h2 {
+  color: rgb(241 245 249);
+}
+.pc-editor p {
+  margin: 0.5em 0;
+}
+.pc-editor ul,
+.pc-editor ol {
+  margin: 0.5em 0;
+  padding-left: 1.5rem;
+}
+.pc-editor ul {
+  list-style: disc;
+}
+.pc-editor ol {
+  list-style: decimal;
+}
+.pc-editor li {
+  margin: 0.2em 0;
+}
+.pc-editor blockquote {
+  border-left: 3px solid rgb(165 180 252);
+  padding-left: 1rem;
+  margin: 0.6em 0;
+  color: rgb(100 116 139);
+  font-style: italic;
+}
+.pc-editor hr {
+  border: none;
+  border-top: 1px solid rgb(203 213 225);
+  margin: 1em 0;
+}
+.dark .pc-editor hr {
+  border-top-color: rgb(51 65 85);
+}
+.pc-editor code {
+  background: rgb(241 245 249);
+  padding: 0.1em 0.35em;
+  border-radius: 0.3rem;
+  font-size: 0.85em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.dark .pc-editor code {
+  background: rgb(30 41 59);
+}
+.pc-editor pre {
+  background: rgb(15 23 42);
+  color: rgb(226 232 240);
+  padding: 0.9rem 1rem;
+  border-radius: 0.6rem;
+  margin: 0.6em 0;
+  overflow-x: auto;
+}
+.pc-editor pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+.pc-editor a {
+  color: rgb(79 70 229);
+  text-decoration: underline;
+}
+.pc-editor img {
+  max-width: 100%;
+  border-radius: 0.5rem;
+  margin: 0.5em 0;
+}
+.pc-editor table {
+  border-collapse: collapse;
+  margin: 0.6em 0;
+  width: 100%;
+}
+.pc-editor th,
+.pc-editor td {
+  border: 1px solid rgb(203 213 225);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+}
+.dark .pc-editor th,
+.dark .pc-editor td {
+  border-color: rgb(51 65 85);
+}
+.pc-editor th {
+  background: rgb(241 245 249);
+  font-weight: 600;
+}
+.dark .pc-editor th {
+  background: rgb(30 41 59);
+}
+.pc-editor ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0.5rem;
+}
+.pc-editor ul[data-type='taskList'] li {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+.pc-editor ul[data-type='taskList'] li > label {
+  margin-top: 0.2rem;
+}
+.pc-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: rgb(148 163 184);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
 /* Subtle custom scrollbar for the side panels. */
 .thin-scroll::-webkit-scrollbar {
   width: 8px;
