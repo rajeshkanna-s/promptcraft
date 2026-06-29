@@ -215,6 +215,22 @@ export default function ResultEditor({
   const [menuOpen, setMenuOpen] = useState(false);
   const [stats, setStats] = useState({ words: 0, chars: 0 });
   const lastContent = useRef(null);
+  const containerRef = useRef(null);
+
+  // Scroll into view on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (containerRef.current) {
+        const elementPosition = containerRef.current.getBoundingClientRect().top + window.scrollY;
+        const offsetPosition = elementPosition - 80; // 80px header offset
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth',
+        });
+      }
+    }, 80);
+    return () => clearTimeout(timer);
+  }, []);
 
   const computeStats = (ed) => {
     if (!ed) return;
@@ -295,7 +311,7 @@ export default function ResultEditor({
     'inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-indigo-700 dark:hover:text-indigo-300';
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md ring-1 ring-black/[0.02] dark:border-slate-800 dark:bg-slate-900">
+    <div ref={containerRef} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md ring-1 ring-black/[0.02] dark:border-slate-800 dark:bg-slate-900">
       {/* Gradient accent strip */}
       <div className="h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500" />
 

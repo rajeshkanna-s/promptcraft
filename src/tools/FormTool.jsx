@@ -132,6 +132,11 @@ export default function FormTool({ config }) {
                 </span>
               </label>
               {renderControl(f)}
+              {f.note && (
+                <div className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+                  {f.note}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -160,6 +165,11 @@ export default function FormTool({ config }) {
                       {f.label}
                     </label>
                     {renderControl(f)}
+                    {f.note && (
+                      <div className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+                        {f.note}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -176,7 +186,7 @@ export default function FormTool({ config }) {
           disabled={loading}
           className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:from-violet-700 hover:to-blue-700 focus:ring-2 focus:ring-violet-300 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-violet-900"
         >
-          {loading ? 'Creating…' : 'Create Content'}
+          {loading ? 'Creating…' : (config.submitLabel || 'Create Content')}
         </button>
       </form>
 

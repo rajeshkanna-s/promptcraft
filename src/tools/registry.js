@@ -4,6 +4,19 @@ import Summarizer from './Summarizer.jsx';
 import TextHumanizer from './TextHumanizer.jsx';
 import StorybookCreator from './StorybookCreator.jsx';
 import { YOUTUBE_TOOLS } from './youtubeTools.jsx';
+import { REWRITING_TOOLS } from './rewritingTools.jsx';
+import { SEO_TOOLS } from './seoTools.jsx';
+import { SOCIAL_MEDIA_TOOLS } from './socialMediaTools.jsx';
+import { IDEA_TOOLS } from './ideaTools.jsx';
+import { EDUCATION_TOOLS } from './educationTools.jsx';
+import { SUPPORT_TOOLS } from './supportTools.jsx';
+import { HR_TOOLS } from './hrTools.jsx';
+import { IMAGE_TOOLS } from './imageTools.jsx';
+import { ADVERTISING_TOOLS } from './advertisingTools.jsx';
+import { CODE_TOOLS } from './codeTools.jsx';
+import { MARKETING_TOOLS } from './marketingTools.jsx';
+import { BOOK_WRITING_TOOLS } from './bookWritingTools.jsx';
+import { WEB_CONTENT_TOOLS } from './webContentTools.jsx';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tool registry
@@ -54,6 +67,32 @@ export const TOOLS = [
   },
   // ── YouTube Tools (config-driven, see youtubeTools.jsx) ──
   ...YOUTUBE_TOOLS,
+  // ── Rewriting Tools (config-driven, see rewritingTools.jsx) ──
+  ...REWRITING_TOOLS,
+  // ── SEO Tools (config-driven, see seoTools.jsx) ──
+  ...SEO_TOOLS,
+  // ── Social Media Tools (config-driven, see socialMediaTools.jsx) ──
+  ...SOCIAL_MEDIA_TOOLS,
+  // ── Idea Generation Tools (config-driven, see ideaTools.jsx) ──
+  ...IDEA_TOOLS,
+  // ── Education Tools (config-driven, see educationTools.jsx) ──
+  ...EDUCATION_TOOLS,
+  // ── Support Tools (config-driven, see supportTools.jsx) ──
+  ...SUPPORT_TOOLS,
+  // ── HR Tools (config-driven, see hrTools.jsx) ──
+  ...HR_TOOLS,
+  // ── Image Prompts (config-driven, see imageTools.jsx) ──
+  ...IMAGE_TOOLS,
+  // ── Advertising Tools (config-driven, see advertisingTools.jsx) ──
+  ...ADVERTISING_TOOLS,
+  // ── Code Tools (config-driven, see codeTools.jsx) ──
+  ...CODE_TOOLS,
+  // ── Marketing Tools (config-driven, see marketingTools.jsx) ──
+  ...MARKETING_TOOLS,
+  // ── Book Writing (config-driven, see bookWritingTools.jsx) ──
+  ...BOOK_WRITING_TOOLS,
+  // ── Website Content (config-driven, see webContentTools.jsx) ──
+  ...WEB_CONTENT_TOOLS,
 ];
 
 export const getTool = (id) => TOOLS.find((t) => t.id === id);

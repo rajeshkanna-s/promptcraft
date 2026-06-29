@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Sparkles } from 'lucide-react';
 
 const DEFAULT_MESSAGES = [
@@ -16,6 +16,7 @@ export default function LoadingResult({
   messages = DEFAULT_MESSAGES,
 }) {
   const [msgIndex, setMsgIndex] = useState(0);
+  const containerRef = useRef(null);
 
   // Cycle through friendly status messages every ~2s.
   useEffect(() => {
@@ -23,8 +24,23 @@ export default function LoadingResult({
     return () => clearInterval(id);
   }, [messages.length]);
 
+  // Scroll into view on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (containerRef.current) {
+        const elementPosition = containerRef.current.getBoundingClientRect().top + window.scrollY;
+        const offsetPosition = elementPosition - 80; // 80px header offset
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth',
+        });
+      }
+    }, 80);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div ref={containerRef} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       {/* Header mirrors the result panel */}
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2.5 dark:border-slate-800">
         <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">{title}</h3>
