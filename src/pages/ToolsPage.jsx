@@ -134,14 +134,6 @@ export default function ToolsPage() {
     }
   }, [toolId]);
 
-  // If no toolId is present in path, redirect to the first available one
-  if (!toolId) {
-    return <Navigate to={`/tools/${firstAvailableTool().id}`} replace />;
-  }
-
-  const active = getTool(toolId);
-  const ActiveComponent = active?.available ? active.component : null;
-
   // Filter tools based on search query
   const filteredTools = useMemo(() => {
     if (!searchQuery.trim()) return TOOLS;
@@ -162,6 +154,15 @@ export default function ToolsPage() {
     }
     return grouped;
   }, [filteredTools]);
+
+  // All hooks run above this point — safe to bail out now.
+  // If no toolId is present in path, redirect to the first available one.
+  if (!toolId) {
+    return <Navigate to={`/tools/${firstAvailableTool().id}`} replace />;
+  }
+
+  const active = getTool(toolId);
+  const ActiveComponent = active?.available ? active.component : null;
 
   // Check if a category should be expanded (always true if searching)
   const isCatExpanded = (category) => {
