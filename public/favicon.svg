@@ -1,0 +1,17 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pc" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366F1" />
+      <stop offset="1" stop-color="#D946EF" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#pc)" />
+  <!-- Big sparkle (matches the lucide Sparkles logo in the header) -->
+  <path
+    d="M32 12c1.4 11.2 5.4 15.2 16.6 16.6C37.4 30 33.4 34 32 45.2 30.6 34 26.6 30 15.4 28.6 26.6 27.2 30.6 23.2 32 12Z"
+    fill="#fff" />
+  <!-- Small accent sparkle -->
+  <path
+    d="M47 40c.6 4 2 5.4 6 6-4 .6-5.4 2-6 6-.6-4-2-5.4-6-6 4-.6 5.4-2 6-6Z"
+    fill="#fff" fill-opacity="0.92" />
+</svg>

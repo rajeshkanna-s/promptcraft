@@ -1,0 +1,33 @@
+@import 'tailwindcss';
+
+/* Class-based dark mode: toggling the `dark` class on <html> flips the theme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle custom scrollbar for the side panels. */
+.thin-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: rgb(148 163 184 / 0.4);
+  border-radius: 9999px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
