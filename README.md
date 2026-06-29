@@ -1,13 +1,18 @@
 # PromptCraft
 
-An AI-powered prompt generator. Type a short idea (e.g. _"sunset beach"_) and PromptCraft expands it into a batch of polished, ready-to-use prompts — tuned by **type** (Image / Writing / Persona / Coding / General) and **tone** (Cinematic, Minimalist, Detailed, Playful, Professional).
+An AI-powered prompt generator. Type a short idea (e.g. _"sunset beach"_) and PromptCraft expands it into a batch of polished, ready-to-use prompts — tuned by **category** (Text / Image / Video) and **tone** (Cinematic, Minimalist, Detailed, Playful, Professional).
 
 Built with **React 18 + Vite + Tailwind CSS v4 + lucide-react**.
 
 ## Features
 
 - Generate **3 / 5 / 10** prompts from a single idea
-- **Prompt type** + **Tone** modifiers that reshape the system prompt
+- **Three prompt categories** with category-specific options:
+  - **Text** (default) → purpose (general / writing / persona / coding / marketing)
+  - **Image** → aspect ratio + visual style
+  - **Video** → aspect ratio + duration + camera motion
+- **Length** presets (Short / Medium / Long) or a **Custom** target up to 4000 chars
+- **Tone** modifier that reshapes the system prompt
 - Per-card **Copy** and **Star** (favorite) buttons, plus **Copy All**
 - **Regenerate** a fresh batch without retyping
 - **History** of the last 20 batches (localStorage) — click to reload

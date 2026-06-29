@@ -1,5 +1,15 @@
-import { Wand2, RefreshCw, AlertCircle } from 'lucide-react';
-import { PROMPT_TYPES, TONES, COUNT_OPTIONS, LENGTHS, CUSTOM_LENGTH } from '../lib/constants.js';
+import { Wand2, RefreshCw, AlertCircle, Type, Image, Video } from 'lucide-react';
+import {
+  PROMPT_TYPES,
+  TYPE_OPTIONS,
+  TONES,
+  COUNT_OPTIONS,
+  LENGTHS,
+  CUSTOM_LENGTH,
+} from '../lib/constants.js';
+
+// Icon per category, keyed by id.
+const TYPE_ICONS = { text: Type, image: Image, video: Video };
 
 // Shared <select> styling.
 const selectClass =
@@ -12,7 +22,9 @@ export default function InputPanel({
   input,
   setInput,
   type,
-  setType,
+  onTypeChange,
+  typeOptions,
+  setOption,
   tone,
   setTone,
   count,
@@ -31,6 +43,7 @@ export default function InputPanel({
   const charCount = input.length;
   const wordCount = trimmed ? trimmed.split(/\s+/).length : 0;
   const activeType = PROMPT_TYPES.find((t) => t.id === type);
+  const optionGroups = TYPE_OPTIONS[type] || [];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -63,25 +76,54 @@ export default function InputPanel({
         </span>
       </div>
 
-      {/* Controls row */}
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label htmlFor="type" className={labelClass}>
-            Prompt type
-          </label>
-          <select
-            id="type"
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className={selectClass}
-          >
-            {PROMPT_TYPES.map((t) => (
-              <option key={t.id} value={t.id}>
+      {/* Prompt category — Text / Image / Video */}
+      <div className="mt-4">
+        <span className={labelClass}>Prompt type</span>
+        <div className="grid grid-cols-3 gap-2">
+          {PROMPT_TYPES.map((t) => {
+            const Icon = TYPE_ICONS[t.id] || Type;
+            const active = type === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => onTypeChange(t.id)}
+                aria-pressed={active}
+                className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition ${
+                  active
+                    ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm'
+                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                }`}
+              >
+                <Icon size={16} />
                 {t.label}
-              </option>
-            ))}
-          </select>
+              </button>
+            );
+          })}
         </div>
+      </div>
+
+      {/* Type-specific options (aspect ratio, style, duration…) + Tone */}
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {optionGroups.map((group) => (
+          <div key={group.key}>
+            <label htmlFor={`opt-${group.key}`} className={labelClass}>
+              {group.label}
+            </label>
+            <select
+              id={`opt-${group.key}`}
+              value={typeOptions[group.key] ?? group.default}
+              onChange={(e) => setOption(group.key, e.target.value)}
+              className={selectClass}
+            >
+              {group.choices.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        ))}
 
         <div>
           <label htmlFor="tone" className={labelClass}>

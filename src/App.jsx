@@ -12,23 +12,32 @@ import {
   loadFavorites,
   saveFavorites,
 } from './lib/storage.js';
-import { CUSTOM_LENGTH } from './lib/constants.js';
+import { CUSTOM_LENGTH, defaultTypeOptions } from './lib/constants.js';
 
 export default function App() {
   // ── Input state ──
   const [input, setInput] = useState('');
-  const [type, setType] = useState('general');
+  const [type, setType] = useState('text');
+  const [typeOptions, setTypeOptions] = useState(() => defaultTypeOptions('text'));
   const [tone, setTone] = useState('none');
   const [count, setCount] = useState(3);
   const [length, setLength] = useState('medium');
   const [customChars, setCustomChars] = useState(CUSTOM_LENGTH.default);
+
+  // Switching category resets its options to sensible defaults.
+  const handleTypeChange = (nextType) => {
+    setType(nextType);
+    setTypeOptions(defaultTypeOptions(nextType));
+  };
+  const setOption = (key, value) =>
+    setTypeOptions((prev) => ({ ...prev, [key]: value }));
 
   // ── Results state ──
   const [prompts, setPrompts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   // Snapshot of the settings that produced the current results (used for export).
-  const [resultMeta, setResultMeta] = useState({ input: '', type: 'image', tone: 'none' });
+  const [resultMeta, setResultMeta] = useState({ input: '', type: 'text', tone: 'none' });
 
   // ── Persisted collections ──
   const [history, setHistory] = useState([]);
@@ -43,7 +52,7 @@ export default function App() {
 
   // Core generation routine — shared by Generate and Regenerate.
   const runGeneration = async (overrides = {}) => {
-    const opts = { input, type, tone, count, length, customChars, ...overrides };
+    const opts = { input, type, typeOptions, tone, count, length, customChars, ...overrides };
     const idea = opts.input.trim();
 
     if (!idea) {
@@ -59,6 +68,7 @@ export default function App() {
         input: idea,
         count: opts.count,
         type: opts.type,
+        typeOptions: opts.typeOptions,
         tone: opts.tone,
         length: opts.length,
         customChars: opts.customChars,
@@ -72,6 +82,7 @@ export default function App() {
         timestamp: Date.now(),
         input: idea,
         type: opts.type,
+        typeOptions: opts.typeOptions,
         tone: opts.tone,
         count: opts.count,
         length: opts.length,
@@ -93,6 +104,7 @@ export default function App() {
   const handleReloadBatch = (batch) => {
     setInput(batch.input);
     setType(batch.type);
+    setTypeOptions(batch.typeOptions || defaultTypeOptions(batch.type));
     setTone(batch.tone);
     setCount(batch.count);
     setLength(batch.length || 'medium');
@@ -125,7 +137,9 @@ export default function App() {
             input={input}
             setInput={setInput}
             type={type}
-            setType={setType}
+            onTypeChange={handleTypeChange}
+            typeOptions={typeOptions}
+            setOption={setOption}
             tone={tone}
             setTone={setTone}
             count={count}

@@ -1,13 +1,106 @@
 // Static option lists shared across the app (input panel + system-prompt builder).
 
-// Prompt "type" changes the kind of output the model is asked to produce.
+// Top-level prompt category — what kind of model the prompts target.
 export const PROMPT_TYPES = [
-  { id: 'image', label: 'Image Generation', hint: 'Prompts for Midjourney, DALL·E, SDXL, etc.' },
-  { id: 'writing', label: 'Creative Writing', hint: 'Story seeds, scene starters, narrative hooks.' },
-  { id: 'persona', label: 'Chatbot / Persona', hint: 'System personas for assistants & characters.' },
-  { id: 'coding', label: 'Coding', hint: 'Well-scoped engineering / build prompts.' },
-  { id: 'general', label: 'General', hint: 'All-purpose, versatile prompts.' },
+  { id: 'text', label: 'Text', hint: 'Prompts for ChatGPT, Claude, writing & code.' },
+  { id: 'image', label: 'Image', hint: 'Prompts for Midjourney, DALL·E, SDXL, Flux.' },
+  { id: 'video', label: 'Video', hint: 'Prompts for Sora, Veo, Runway, Kling.' },
 ];
+
+// Per-category option groups. Each group renders as a dropdown in the input
+// panel and is woven into the system prompt (see api.js).
+export const TYPE_OPTIONS = {
+  text: [
+    {
+      key: 'purpose',
+      label: 'Purpose',
+      default: 'general',
+      choices: [
+        { id: 'general', label: 'General' },
+        { id: 'writing', label: 'Creative writing' },
+        { id: 'persona', label: 'Chatbot / persona' },
+        { id: 'coding', label: 'Coding' },
+        { id: 'marketing', label: 'Marketing copy' },
+      ],
+    },
+  ],
+  image: [
+    {
+      key: 'aspect',
+      label: 'Aspect ratio',
+      default: '1:1',
+      choices: [
+        { id: '1:1', label: 'Square 1:1' },
+        { id: '16:9', label: 'Landscape 16:9' },
+        { id: '9:16', label: 'Vertical 9:16' },
+        { id: '4:3', label: 'Standard 4:3' },
+        { id: '3:2', label: 'Photo 3:2' },
+      ],
+    },
+    {
+      key: 'style',
+      label: 'Visual style',
+      default: 'photorealistic',
+      choices: [
+        { id: 'photorealistic', label: 'Photorealistic' },
+        { id: 'digital-art', label: 'Digital art' },
+        { id: '3d-render', label: '3D render' },
+        { id: 'anime', label: 'Anime / manga' },
+        { id: 'oil-painting', label: 'Oil painting' },
+        { id: 'watercolor', label: 'Watercolor' },
+        { id: 'pixel-art', label: 'Pixel art' },
+      ],
+    },
+  ],
+  video: [
+    {
+      key: 'aspect',
+      label: 'Aspect ratio',
+      default: '16:9',
+      choices: [
+        { id: '16:9', label: 'Landscape 16:9' },
+        { id: '9:16', label: 'Vertical 9:16' },
+        { id: '1:1', label: 'Square 1:1' },
+        { id: '21:9', label: 'Cinematic 21:9' },
+      ],
+    },
+    {
+      key: 'duration',
+      label: 'Duration',
+      default: '10s',
+      choices: [
+        { id: '5s', label: '~5 seconds' },
+        { id: '10s', label: '~10 seconds' },
+        { id: '30s', label: '~30 seconds' },
+      ],
+    },
+    {
+      key: 'motion',
+      label: 'Camera / motion',
+      default: 'dynamic',
+      choices: [
+        { id: 'static', label: 'Static shot' },
+        { id: 'dynamic', label: 'Dynamic motion' },
+        { id: 'pan', label: 'Cinematic pan' },
+        { id: 'aerial', label: 'Aerial / drone' },
+        { id: 'tracking', label: 'Tracking shot' },
+      ],
+    },
+  ],
+};
+
+// Build the default option object for a given category.
+export function defaultTypeOptions(type) {
+  const groups = TYPE_OPTIONS[type] || [];
+  return Object.fromEntries(groups.map((g) => [g.key, g.default]));
+}
+
+// Resolve the selected choice object for one option group.
+export function getOptionChoice(type, key, value) {
+  const group = (TYPE_OPTIONS[type] || []).find((g) => g.key === key);
+  if (!group) return null;
+  return group.choices.find((c) => c.id === (value ?? group.default)) || group.choices[0];
+}
 
 // Optional tone modifier appended to the system instructions.
 export const TONES = [
@@ -57,11 +150,11 @@ export const CUSTOM_LENGTH = { min: 50, max: 4000, default: 800 };
 
 export const MAX_HISTORY = 20;
 
-// Human-readable description used inside the system prompt for each type.
-export const TYPE_DESCRIPTIONS = {
-  image: 'image-generation',
+// How each text "purpose" is described inside the system prompt.
+export const TEXT_PURPOSE_DESCRIPTIONS = {
+  general: 'general-purpose AI',
   writing: 'creative-writing',
   persona: 'chatbot persona / system-prompt',
   coding: 'software-engineering',
-  general: 'general-purpose AI',
+  marketing: 'marketing & copywriting',
 };

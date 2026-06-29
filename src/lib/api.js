@@ -18,12 +18,56 @@
 // builds the system prompt, picks a transport, and parses the JSON safely.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { TYPE_DESCRIPTIONS, TONES, LENGTHS, CUSTOM_LENGTH } from './constants.js';
+import {
+  TEXT_PURPOSE_DESCRIPTIONS,
+  TONES,
+  LENGTHS,
+  CUSTOM_LENGTH,
+  getOptionChoice,
+} from './constants.js';
 
 // Clamp a custom character target into the allowed range.
 function clampChars(n) {
   const v = Number(n) || CUSTOM_LENGTH.default;
   return Math.min(CUSTOM_LENGTH.max, Math.max(CUSTOM_LENGTH.min, Math.round(v)));
+}
+
+// Build the "what kind of prompt" label + a category-specific requirements
+// clause from the selected category and its options (aspect ratio, style, …).
+function buildTypeClause(type, options = {}) {
+  const choice = (key) => getOptionChoice(type, key, options[key]);
+
+  if (type === 'image') {
+    const aspect = choice('aspect')?.id || '1:1';
+    const style = choice('style')?.label.toLowerCase() || 'photorealistic';
+    return {
+      label: 'image-generation',
+      requirements:
+        ` Every prompt must be written for a text-to-image model and must explicitly state a ` +
+        `${aspect} aspect ratio and a ${style} visual style, and describe subject, setting, ` +
+        `lighting, color palette, composition and level of detail.`,
+    };
+  }
+
+  if (type === 'video') {
+    const aspect = choice('aspect')?.id || '16:9';
+    const duration = choice('duration')?.label.toLowerCase() || '~10 seconds';
+    const motion = choice('motion')?.label.toLowerCase() || 'dynamic motion';
+    return {
+      label: 'text-to-video',
+      requirements:
+        ` Every prompt must be written for a text-to-video model and must explicitly state a ` +
+        `${aspect} aspect ratio, ${duration} duration and ${motion} camera work, and describe ` +
+        `the scene, subject action, pacing, lighting and mood across the shot.`,
+    };
+  }
+
+  // text (default)
+  const purpose = choice('purpose')?.id || 'general';
+  return {
+    label: TEXT_PURPOSE_DESCRIPTIONS[purpose] || 'general-purpose AI',
+    requirements: '',
+  };
 }
 
 // All config comes from Vite env vars (see .env / .env.example).
@@ -39,8 +83,8 @@ const CONFIG = {
  * Build the dynamic system prompt from the selected type + tone.
  * The model is instructed to return ONLY a JSON array of strings.
  */
-export function buildSystemPrompt({ count, type, tone, length, customChars }) {
-  const typeLabel = TYPE_DESCRIPTIONS[type] || 'general-purpose AI';
+export function buildSystemPrompt({ count, type, tone, length, customChars, typeOptions }) {
+  const { label: typeLabel, requirements } = buildTypeClause(type, typeOptions);
   const toneObj = TONES.find((t) => t.id === tone);
   const toneClause =
     toneObj && toneObj.id !== 'none' ? ` in a ${toneObj.label.toLowerCase()} style` : '';
@@ -61,8 +105,9 @@ export function buildSystemPrompt({ count, type, tone, length, customChars }) {
     `You are an expert prompt engineer. Given a short user input, generate exactly ` +
     `${count} distinct, high-quality ${typeLabel} prompts${toneClause}. ` +
     `Each prompt should be ${lengthInstruction}, vivid and specific, and expand ` +
-    `meaningfully on the user's idea. Respond ONLY with a valid JSON array of ${count} ` +
-    `strings, nothing else — no markdown formatting, no code fences, no explanation, no preamble.`
+    `meaningfully on the user's idea.${requirements} Respond ONLY with a valid JSON array of ` +
+    `${count} strings, nothing else — no markdown formatting, no code fences, no explanation, ` +
+    `no preamble.`
   );
 }
 
@@ -190,8 +235,8 @@ export function parsePrompts(raw, expectedCount) {
  * Single entry point used by the UI.
  * @returns {Promise<string[]>} array of generated prompt strings
  */
-export async function generatePrompts({ input, count, type, tone, length, customChars }) {
-  const system = buildSystemPrompt({ count, type, tone, length, customChars });
+export async function generatePrompts({ input, count, type, tone, length, customChars, typeOptions }) {
+  const system = buildSystemPrompt({ count, type, tone, length, customChars, typeOptions });
 
   // Budget tokens by length × count (+headroom for JSON syntax), capped sanely.
   // For custom mode, estimate ~1 token per 3 chars plus a small buffer.
