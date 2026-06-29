@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PanelRightOpen } from 'lucide-react';
 import InputPanel from '../components/InputPanel.jsx';
 import ResultEditor from '../components/ResultEditor.jsx';
-import SkeletonCard from '../components/SkeletonCard.jsx';
+import LoadingResult from '../components/LoadingResult.jsx';
 import Sidebar from '../components/Sidebar.jsx';
 import { Lightbulb } from 'lucide-react';
 import { generatePrompts } from '../lib/api.js';
@@ -67,11 +67,20 @@ export default function GeneratorPage() {
   const [history, setHistory] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const resultRef = useRef(null);
 
   useEffect(() => {
     setHistory(loadHistory());
     setFavorites(loadFavorites());
   }, []);
+
+  // When a generation kicks off, smoothly scroll the result area into view so
+  // the user sees the loading animation and then the result.
+  useEffect(() => {
+    if (loading) {
+      resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [loading]);
 
   const runGeneration = async (overrides = {}) => {
     const opts = { input, type, typeOptions, tone, count, length, customChars, ...overrides };
@@ -190,13 +199,9 @@ export default function GeneratorPage() {
             canRegenerate={Boolean(resultMeta.input)}
           />
 
-          <section>
+          <section ref={resultRef} className="scroll-mt-24">
             {loading ? (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {Array.from({ length: count }).map((_, i) => (
-                  <SkeletonCard key={i} />
-                ))}
-              </div>
+              <LoadingResult />
             ) : prompts.length ? (
               <ResultEditor content={promptsToHtml(prompts, resultMeta)} />
             ) : (
