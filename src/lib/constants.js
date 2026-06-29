@@ -51,7 +51,9 @@ export const LENGTHS = [
 ];
 
 // Bounds for the custom character-count input.
-export const CUSTOM_LENGTH = { min: 50, max: 1000, default: 500 };
+// Max is set well above what the "Long" preset produces (~1000-1500 chars),
+// so Custom can always go longer than any preset.
+export const CUSTOM_LENGTH = { min: 50, max: 4000, default: 800 };
 
 export const MAX_HISTORY = 20;
 

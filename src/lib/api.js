@@ -51,7 +51,10 @@ export function buildSystemPrompt({ count, type, tone, length, customChars }) {
   // Custom length: target an exact character budget instead of a preset.
   const lengthInstruction =
     length === 'custom'
-      ? `approximately ${clampChars(customChars)} characters long (a detailed, self-contained prompt that stays close to this length)`
+      ? `at least ${clampChars(customChars)} characters long — a thorough, self-contained prompt ` +
+        `packed with concrete, specific detail (subject, setting, mood, style, composition, ` +
+        `constraints, requirements). Keep expanding with relevant detail until you reach that ` +
+        `length; do NOT stop short of ${clampChars(customChars)} characters`
       : lengthObj.instruction;
 
   return (
@@ -193,9 +196,13 @@ export async function generatePrompts({ input, count, type, tone, length, custom
   // Budget tokens by length × count (+headroom for JSON syntax), capped sanely.
   // For custom mode, estimate ~1 token per 3 chars plus a small buffer.
   const lengthObj = LENGTHS.find((l) => l.id === length) || LENGTHS[1];
+  // ~1 token ≈ 3 chars of output, plus headroom so the model can reach (and
+  // slightly exceed) the target instead of being cut off early.
   const perPrompt =
-    length === 'custom' ? Math.ceil(clampChars(customChars) / 3) + 60 : lengthObj.tokensPerPrompt;
-  const maxTokens = Math.min(8000, count * perPrompt + 200);
+    length === 'custom'
+      ? Math.ceil(clampChars(customChars) / 2.5) + 80
+      : lengthObj.tokensPerPrompt;
+  const maxTokens = Math.min(16000, count * perPrompt + 200);
 
   // Swap to callAnthropic({ system, user: input }) here to use Claude directly.
   const raw = await callAiChat({ system, user: input, maxTokens });
