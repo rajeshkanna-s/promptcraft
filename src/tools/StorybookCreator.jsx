@@ -18,10 +18,11 @@ const GENRES = [
   'Funny',
 ];
 const PAGE_OPTIONS = [4, 6, 8, 10, 12];
+// Each page is a full page of prose — at least 20 sentences.
 const PAGE_LENGTHS = [
-  { id: 'short', label: 'Short (1-2 sentences)', instruction: '1-2 short, simple sentences' },
-  { id: 'medium', label: 'Medium (3-4 sentences)', instruction: '3-4 sentences' },
-  { id: 'long', label: 'Long (5-7 sentences)', instruction: '5-7 rich, descriptive sentences' },
+  { id: 'standard', label: 'Standard (~20 sentences)', sentences: 20 },
+  { id: 'long', label: 'Long (~30 sentences)', sentences: 30 },
+  { id: 'epic', label: 'Epic (~40 sentences)', sentences: 40 },
 ];
 
 export default function StorybookCreator() {
@@ -29,12 +30,32 @@ export default function StorybookCreator() {
   const [audience, setAudience] = useState('Kids (5-8)');
   const [genre, setGenre] = useState('Adventure');
   const [pages, setPages] = useState(6);
-  const [pageLength, setPageLength] = useState('medium');
+  const [pageLength, setPageLength] = useState('standard');
   const [language, setLanguage] = useState('English');
 
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState('');
   const [error, setError] = useState('');
   const [story, setStory] = useState('');
+
+  // Pull a JSON object out of a model response (handles stray prose/fences).
+  const parsePlan = (raw, n) => {
+    try {
+      const s = raw.indexOf('{');
+      const e = raw.lastIndexOf('}');
+      const obj = JSON.parse(raw.slice(s, e + 1));
+      const beats = Array.isArray(obj.beats) ? obj.beats.map(String) : [];
+      while (beats.length < n) beats.push('Continue the story.');
+      return {
+        title: obj.title || idea.trim(),
+        tagline: obj.tagline || '',
+        style: obj.style || '',
+        beats: beats.slice(0, n),
+      };
+    } catch {
+      return { title: idea.trim(), tagline: '', style: '', beats: Array(n).fill('Continue the story.') };
+    }
+  };
 
   const create = async (e) => {
     e?.preventDefault();
@@ -46,32 +67,61 @@ export default function StorybookCreator() {
     setLoading(true);
     setStory('');
     try {
-      const out = await generateText({
+      const sentences = PAGE_LENGTHS.find((l) => l.id === pageLength)?.sentences || 20;
+
+      // 1) Plan the book (title, tagline, style/characters, one beat per page) so
+      //    the page-by-page calls stay consistent.
+      setProgress('Planning the story…');
+      const planRaw = await generateText({
         system:
-          'You are a beloved children’s storybook author and illustrator. Create an original, ' +
-          `age-appropriate storybook for the "${audience}" audience in the ${genre} genre, ` +
-          `written in ${language}.\n\n` +
-          'Format the output in clean Markdown EXACTLY like this:\n' +
-          '# <Story Title>\n' +
-          '_A short one-line tagline._\n\n' +
-          `Then exactly ${pages} pages. For each page use:\n` +
-          '## Page <n>\n' +
-          `<${
-            PAGE_LENGTHS.find((l) => l.id === pageLength)?.instruction || '3-4 sentences'
-          } of story text appropriate for the audience>\n\n` +
-          '**Illustration:** <a vivid image-generation prompt describing the scene, characters, ' +
-          'setting, art style and mood>\n\n' +
-          'Keep characters and style consistent across pages. End with a warm, satisfying ' +
-          'conclusion. Respond with ONLY the Markdown, no preamble.',
+          `You are a storybook author. Plan an original ${genre} storybook for the "${audience}" ` +
+          `audience, written in ${language}. Respond with ONLY valid JSON (no markdown, no ` +
+          `preamble): {"title": string, "tagline": string, "style": string describing the art ` +
+          `style and the main characters to keep consistent, "beats": array of exactly ${pages} ` +
+          `one-sentence page beats that tell the full arc}.`,
         user: `Story idea: ${idea.trim()}`,
-        maxTokens: 4000,
+        maxTokens: 1200,
         temperature: 0.9,
       });
-      setStory(out.trim());
+      const plan = parsePlan(planRaw, pages);
+
+      // 2) Write each page on its own — this is what reliably hits the
+      //    "at least N sentences" requirement (a single call tapers off).
+      let md = `# ${plan.title}\n\n${plan.tagline ? `_${plan.tagline}_\n` : ''}`;
+      let recap = '';
+      for (let i = 0; i < pages; i++) {
+        setProgress(`Writing page ${i + 1} of ${pages}…`);
+        const isLast = i === pages - 1;
+        const pageRaw = await generateText({
+          system:
+            `You are writing page ${i + 1} of ${pages} of a ${genre} storybook for the ` +
+            `"${audience}" audience, in ${language}. Keep characters and art style consistent: ` +
+            `${plan.style}. Write AT LEAST ${sentences} full, vivid sentences of flowing ` +
+            `narrative for THIS page — use description, action, dialogue and feelings, and keep ` +
+            `writing until you reach at least ${sentences} sentences. Do NOT stop short and do ` +
+            `NOT rush. ${isLast ? 'Bring the story to a warm, satisfying conclusion. ' : ''}` +
+            `After the prose, add exactly one final line starting with "**Illustration:** " that ` +
+            `describes a vivid image-generation prompt for this page (scene, characters, setting, ` +
+            `art style, mood). Output ONLY the page prose followed by that illustration line — no ` +
+            `page heading, no preamble.`,
+          user:
+            `Overall idea: ${idea.trim()}\n` +
+            `This page's beat: ${plan.beats[i]}\n` +
+            `Story so far: ${recap || '(this is the first page)'}`,
+          maxTokens: Math.min(4000, sentences * 32 + 300),
+          temperature: 0.9,
+        });
+        const pageText = pageRaw.trim();
+        md += `\n## Page ${i + 1}\n\n${pageText}\n`;
+        const prose = pageText.split('**Illustration:**')[0].trim();
+        recap = (recap + ' ' + prose).slice(-900);
+      }
+      setStory(md.trim());
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
+      setProgress('');
     }
   };
 
@@ -203,7 +253,7 @@ export default function StorybookCreator() {
         <div className="mt-6">
           <LoadingResult
             title="Your storybook"
-            label="Creating your storybook"
+            label={progress || 'Creating your storybook'}
             messages={[
               'Dreaming up characters…',
               'Plotting the adventure…',
