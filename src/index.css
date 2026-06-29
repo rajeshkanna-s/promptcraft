@@ -23,8 +23,9 @@ body {
 /* ── TipTap rich-text editor content styling (Tailwind v4 resets defaults) ── */
 .pc-editor {
   color: rgb(51 65 85);
-  font-size: 0.95rem;
-  line-height: 1.7;
+  font-size: 1rem;
+  line-height: 1.75;
+  letter-spacing: 0.001em;
 }
 .dark .pc-editor {
   color: rgb(203 213 225);
@@ -32,24 +33,62 @@ body {
 .pc-editor:focus {
   outline: none;
 }
+.pc-editor > :first-child {
+  margin-top: 0;
+}
+/* Intro line (e.g. "Here are 3 prompts based on…") reads as a soft lead-in. */
+.pc-editor > p:first-child {
+  color: rgb(100 116 139);
+  font-size: 0.95rem;
+}
+.dark .pc-editor > p:first-child {
+  color: rgb(148 163 184);
+}
 .pc-editor h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0.8em 0 0.4em;
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0.6em 0 0.5em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid rgb(226 232 240);
   color: rgb(15 23 42);
 }
 .pc-editor h2 {
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   font-weight: 700;
-  margin: 0.7em 0 0.35em;
+  margin: 1em 0 0.4em;
+  padding-left: 0.6rem;
+  border-left: 3px solid rgb(129 140 248);
   color: rgb(15 23 42);
+}
+/* Section / "Prompt N" labels: an accented chip-like heading. */
+.pc-editor h3 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 1.3em 0 0.5em;
+  padding: 0.25rem 0.7rem;
+  border-radius: 9999px;
+  color: rgb(67 56 202);
+  background: linear-gradient(135deg, rgb(238 242 255), rgb(250 232 255));
 }
 .dark .pc-editor h1,
 .dark .pc-editor h2 {
   color: rgb(241 245 249);
 }
+.dark .pc-editor h1 {
+  border-bottom-color: rgb(51 65 85);
+}
+.dark .pc-editor h3 {
+  color: rgb(199 210 254);
+  background: linear-gradient(135deg, rgb(49 46 129 / 0.5), rgb(112 26 117 / 0.4));
+}
 .pc-editor p {
-  margin: 0.5em 0;
+  margin: 0.6em 0;
 }
 .pc-editor ul,
 .pc-editor ol {

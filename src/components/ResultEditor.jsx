@@ -239,7 +239,7 @@ export default function ResultEditor({
     content: content || '',
     editorProps: {
       attributes: {
-        class: 'pc-editor focus:outline-none min-h-[20rem] px-5 py-4',
+        class: 'pc-editor focus:outline-none min-h-[20rem] px-6 py-5',
       },
     },
   });

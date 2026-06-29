@@ -31,11 +31,8 @@ function promptsToHtml(prompts, meta) {
     meta.input ? ` based on "${escapeHtml(meta.input)}"` : ''
   }:`;
   const body = prompts
-    .map(
-      (p, i) =>
-        `<p><strong>Prompt ${i + 1}:</strong></p><p>${escapeHtml(p)}</p>`,
-    )
-    .join('');
+    .map((p, i) => `<h3>Prompt ${i + 1}</h3><p>${escapeHtml(p)}</p>`)
+    .join('<hr>');
   return `<p>${intro}</p>${body}`;
 }
 
