@@ -113,7 +113,7 @@ export const TONES = [
 ];
 
 // How many prompts to generate per batch.
-export const COUNT_OPTIONS = [3, 5, 10];
+export const COUNT_OPTIONS = [1, 3, 5, 10];
 
 // Prompt length — drives both the wording in the system prompt and the
 // per-prompt token budget (see api.js).
