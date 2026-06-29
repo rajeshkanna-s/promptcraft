@@ -112,14 +112,10 @@ export function buildSystemPrompt({ count, type, tone, length, customChars, type
 }
 
 /**
- * Transport #1 — Supabase Edge Function proxy (default).
- * Returns the model's raw text content.
+ * Low-level transport — POST a single prompt string to the Supabase proxy and
+ * return the model's raw text content. Shared by every feature in the app.
  */
-async function callAiChat({ system, user, maxTokens = 1000 }) {
-  // The proxy accepts a single `prompt` string, so we fold the system
-  // instructions and the user's idea into one message.
-  const prompt = `${system}\n\nUser input: "${user}"`;
-
+async function callProxy({ prompt, maxTokens = 1000, temperature = 0.8, topP = 0.9 }) {
   const res = await fetch(CONFIG.endpoint, {
     method: 'POST',
     headers: {
@@ -132,11 +128,11 @@ async function callAiChat({ system, user, maxTokens = 1000 }) {
       modelId: CONFIG.modelId,
       tokenSlotId: CONFIG.tokenSlotId,
       prompt,
-      temperature: 0.8,
-      top_p: 0.9,
+      temperature,
+      top_p: topP,
       max_tokens: maxTokens,
-      // Long batches take longer to generate, so scale the timeout with size.
-      attempt_timeout_ms: Math.min(60000, 20000 + maxTokens * 4),
+      // Bigger responses take longer to generate, so scale the timeout with size.
+      attempt_timeout_ms: Math.min(90000, 20000 + maxTokens * 4),
       stream: false,
     }),
   });
@@ -149,6 +145,23 @@ async function callAiChat({ system, user, maxTokens = 1000 }) {
   const data = await res.json();
   // The proxy returns { content, model, usage, ... }.
   return data.content ?? '';
+}
+
+/**
+ * Transport #1 — prompt-generator flavored call (folds system + user idea).
+ */
+async function callAiChat({ system, user, maxTokens = 1000 }) {
+  const prompt = `${system}\n\nUser input: "${user}"`;
+  return callProxy({ prompt, maxTokens });
+}
+
+/**
+ * General-purpose text generation used by the Tools pages (Blog Writer,
+ * Summarizer, …). Returns the model's raw text — no JSON parsing.
+ */
+export async function generateText({ system = '', user, maxTokens = 2000, temperature = 0.8 }) {
+  const prompt = system ? `${system}\n\n${user}` : user;
+  return callProxy({ prompt, maxTokens, temperature });
 }
 
 /**

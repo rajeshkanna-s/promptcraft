@@ -4,7 +4,23 @@ An AI-powered prompt generator. Type a short idea (e.g. _"sunset beach"_) and Pr
 
 Built with **React 18 + Vite + Tailwind CSS v4 + lucide-react**.
 
-## Features
+## Pages
+
+PromptCraft is a two-page app (client-side routing via `HashRouter`):
+
+- **Generator** (`/`) — the prompt generator described below.
+- **Tools** (`#/tools`) — a tools workspace with a left sidebar. Tools live in a
+  registry ([src/tools/registry.js](src/tools/registry.js)); adding a new one is a
+  single entry plus a component. Shipped tools:
+  - **Blog Writer** — AI title suggestions + full Markdown blog posts.
+  - **AI Summarizer** — summarize pasted text / `.txt` transcripts with selectable
+    templates (Key Highlights, Detailed Notes, Action Items, …).
+  - _Coming soon:_ Text Humanizer, Storybook Creator (shown greyed-out).
+
+  > Audio/video & YouTube transcription require a speech-to-text backend and are
+  > not wired into the summarizer; it works on text/transcripts.
+
+## Generator features
 
 - Generate **3 / 5 / 10** prompts from a single idea
 - **Three prompt categories** with category-specific options:
