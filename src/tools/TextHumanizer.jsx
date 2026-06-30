@@ -4,7 +4,7 @@ import { generateText } from '../lib/api.js';
 import { mdToHtml } from '../lib/markdown.js';
 import ResultEditor from '../components/ResultEditor.jsx';
 import LoadingResult from '../components/LoadingResult.jsx';
-import { ToolHeader, ToolError, ToolButton, fieldClass, labelClass, LANGUAGES } from './ToolShell.jsx';
+import { ToolHeader, ToolError, ToolButton, ToolFormCard, fieldClass, labelClass, LANGUAGES } from './ToolShell.jsx';
 
 const STRENGTHS = [
   { id: 'light', label: 'Light — light touch-up' },
@@ -67,10 +67,7 @@ export default function TextHumanizer() {
         description="Make AI-generated text sound natural and human"
       />
 
-      <form
-        onSubmit={humanize}
-        className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6"
-      >
+      <ToolFormCard onSubmit={humanize}>
         <label htmlFor="hum-text" className={labelClass}>
           Text to humanize
         </label>
@@ -150,7 +147,7 @@ export default function TextHumanizer() {
             {loading ? 'Humanizing…' : 'Humanize Text'}
           </ToolButton>
         </div>
-      </form>
+      </ToolFormCard>
 
       {loading ? (
         <div className="mt-6">

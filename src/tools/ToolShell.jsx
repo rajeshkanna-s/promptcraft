@@ -11,15 +11,30 @@ export const labelClass =
 // Header block for a tool (icon + title + description).
 export function ToolHeader({ icon: Icon, title, description }) {
   return (
-    <div className="mb-6 flex items-start gap-3">
-      <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white shadow-sm">
-        <Icon size={20} />
+    <div className="mb-6 flex items-start gap-3.5">
+      <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-indigo-500/30">
+        <Icon size={22} />
       </span>
       <div>
-        <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">{title}</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400">{description}</p>
+        <h2 className="bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-2xl font-extrabold tracking-tight text-transparent dark:from-white dark:to-slate-300">
+          {title}
+        </h2>
+        <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{description}</p>
       </div>
     </div>
+  );
+}
+
+// Elevated form card with a gradient accent strip (shared across all tools).
+export function ToolFormCard({ onSubmit, children, className = '' }) {
+  return (
+    <form
+      onSubmit={onSubmit}
+      className={`relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-lg shadow-indigo-500/5 ring-1 ring-black/[0.02] dark:border-slate-800 dark:bg-slate-900 sm:p-7 ${className}`}
+    >
+      <span className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500" />
+      {children}
+    </form>
   );
 }
 
@@ -43,8 +58,9 @@ export function ToolButton({ loading, children, ...props }) {
     <button
       {...props}
       disabled={loading || props.disabled}
-      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-300 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-800"
+      className="group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-indigo-500/40 focus:ring-2 focus:ring-indigo-300 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-800"
     >
+      <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
       {loading ? <Loader2 size={18} className="animate-spin" /> : null}
       {children}
     </button>

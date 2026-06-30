@@ -8,6 +8,7 @@ import {
   ToolHeader,
   ToolError,
   ToolButton,
+  ToolFormCard,
   fieldClass,
   labelClass,
   LANGUAGES,
@@ -122,10 +123,7 @@ export default function Summarizer() {
         description="Summarize transcripts, notes or any text with customizable templates"
       />
 
-      <form
-        onSubmit={summarize}
-        className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6"
-      >
+      <ToolFormCard onSubmit={summarize}>
         {/* File upload (text files) */}
         <label
           htmlFor="sum-file"
@@ -240,7 +238,7 @@ export default function Summarizer() {
             {loading ? 'Summarizing…' : 'Summarize'}
           </ToolButton>
         </div>
-      </form>
+      </ToolFormCard>
 
       {loading ? (
         <div className="mt-6">

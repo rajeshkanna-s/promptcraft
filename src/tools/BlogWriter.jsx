@@ -8,6 +8,7 @@ import {
   ToolHeader,
   ToolError,
   ToolButton,
+  ToolFormCard,
   fieldClass,
   labelClass,
   LANGUAGES,
@@ -109,10 +110,7 @@ export default function BlogWriter() {
         description="Easily create in-depth blog posts for any topic"
       />
 
-      <form
-        onSubmit={generate}
-        className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6"
-      >
+      <ToolFormCard onSubmit={generate}>
         {/* Title */}
         <label htmlFor="blog-title" className={labelClass}>
           Enter Blog Title
@@ -217,7 +215,7 @@ export default function BlogWriter() {
             {loading ? 'Writing your blog post…' : 'Generate Blog Post'}
           </ToolButton>
         </div>
-      </form>
+      </ToolFormCard>
 
       {loading ? (
         <div className="mt-6">

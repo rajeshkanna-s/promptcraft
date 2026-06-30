@@ -182,6 +182,12 @@ export default function ToolsPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+      {/* Decorative ambient background */}
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-32 left-[12%] h-72 w-72 rounded-full bg-indigo-300/25 blur-3xl dark:bg-indigo-700/15" />
+        <div className="absolute -top-24 right-[10%] h-72 w-72 rounded-full bg-fuchsia-300/20 blur-3xl dark:bg-fuchsia-700/10" />
+      </div>
+
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* ── Left sidebar ── */}
         <aside className="lg:sticky lg:top-[88px] lg:h-[calc(100vh-120px)] lg:w-64 lg:shrink-0 lg:overflow-y-auto thin-scroll pr-1 select-none">

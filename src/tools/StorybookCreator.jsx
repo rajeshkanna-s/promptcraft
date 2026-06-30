@@ -4,7 +4,7 @@ import { generateText } from '../lib/api.js';
 import { mdToHtml } from '../lib/markdown.js';
 import ResultEditor from '../components/ResultEditor.jsx';
 import LoadingResult from '../components/LoadingResult.jsx';
-import { ToolHeader, ToolError, ToolButton, fieldClass, labelClass, LANGUAGES } from './ToolShell.jsx';
+import { ToolHeader, ToolError, ToolButton, ToolFormCard, fieldClass, labelClass, LANGUAGES } from './ToolShell.jsx';
 
 const AUDIENCES = ['Toddlers (2-4)', 'Kids (5-8)', 'Tweens (9-12)', 'Teens', 'Adults'];
 const GENRES = [
@@ -133,10 +133,7 @@ export default function StorybookCreator() {
         description="Turn an idea into an illustrated story, page by page"
       />
 
-      <form
-        onSubmit={create}
-        className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6"
-      >
+      <ToolFormCard onSubmit={create}>
         <label htmlFor="story-idea" className={labelClass}>
           Story idea
         </label>
@@ -247,7 +244,7 @@ export default function StorybookCreator() {
             {loading ? 'Creating your storybook…' : 'Create Storybook'}
           </ToolButton>
         </div>
-      </form>
+      </ToolFormCard>
 
       {loading ? (
         <div className="mt-6">

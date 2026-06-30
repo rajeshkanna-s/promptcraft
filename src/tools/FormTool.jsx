@@ -4,7 +4,7 @@ import { generateText } from '../lib/api.js';
 import { mdToHtml } from '../lib/markdown.js';
 import ResultEditor from '../components/ResultEditor.jsx';
 import LoadingResult from '../components/LoadingResult.jsx';
-import { ToolHeader, ToolError, fieldClass, labelClass } from './ToolShell.jsx';
+import { ToolHeader, ToolError, ToolFormCard, fieldClass, labelClass } from './ToolShell.jsx';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Generic, config-driven tool. Most simple "fill a form → get AI output" tools
@@ -114,10 +114,7 @@ export default function FormTool({ config }) {
     <div>
       <ToolHeader icon={icon} title={title} description={description} />
 
-      <form
-        onSubmit={submit}
-        className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6"
-      >
+      <ToolFormCard onSubmit={submit}>
         {/* Numbered main fields */}
         <div className="space-y-5">
           {mainFields.map((f, i) => (
@@ -188,7 +185,7 @@ export default function FormTool({ config }) {
         >
           {loading ? 'Creating…' : (config.submitLabel || 'Create Content')}
         </button>
-      </form>
+      </ToolFormCard>
 
       {loading ? (
         <div className="mt-6">
