@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import {
   LayoutGrid,
@@ -118,6 +118,66 @@ export default function ToolsPage() {
   // Mobile sidebar drawer
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  // ── Resizable sidebar (desktop only) ──
+  const SIDEBAR_MIN = 200;
+  const SIDEBAR_MAX = 560;
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches,
+  );
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const saved = Number(localStorage.getItem('promptcraft.toolsSidebarWidth'));
+    return saved >= SIDEBAR_MIN && saved <= SIDEBAR_MAX ? saved : 256;
+  });
+  const rowRef = useRef(null);
+  const resizingRef = useRef(false);
+  const widthRef = useRef(sidebarWidth);
+  useEffect(() => {
+    widthRef.current = sidebarWidth;
+  }, [sidebarWidth]);
+
+  // Track the lg breakpoint so the drag-width only applies on desktop.
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const onChange = () => setIsDesktop(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  // Global drag listeners for the resize handle.
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!resizingRef.current || !rowRef.current) return;
+      const left = rowRef.current.getBoundingClientRect().left;
+      const w = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, e.clientX - left));
+      widthRef.current = w;
+      setSidebarWidth(w);
+    };
+    const onUp = () => {
+      if (!resizingRef.current) return;
+      resizingRef.current = false;
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+      try {
+        localStorage.setItem('promptcraft.toolsSidebarWidth', String(Math.round(widthRef.current)));
+      } catch {
+        /* ignore */
+      }
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, []);
+
+  const startResize = (e) => {
+    e.preventDefault();
+    resizingRef.current = true;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+  };
+
   // Collapse/Expand state for all categories
   const [expandedCats, setExpandedCats] = useState(() => {
     const activeTool = getTool(toolId);
@@ -215,10 +275,11 @@ export default function ToolsPage() {
         />
       )}
 
-      <div className="flex flex-col gap-6 lg:flex-row">
+      <div ref={rowRef} className="flex flex-col gap-6 lg:flex-row lg:gap-1">
         {/* ── Left sidebar (static on desktop, slide-in drawer on mobile) ── */}
         <aside
-          className={`thin-scroll fixed inset-y-0 left-0 z-50 w-[19rem] max-w-[85vw] overflow-y-auto bg-slate-100 p-4 shadow-xl transition-transform duration-300 dark:bg-slate-950 lg:sticky lg:inset-y-auto lg:top-[88px] lg:z-auto lg:h-[calc(100vh-120px)] lg:w-64 lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:transition-none ${
+          style={isDesktop ? { width: sidebarWidth } : undefined}
+          className={`thin-scroll fixed inset-y-0 left-0 z-50 w-[19rem] max-w-[85vw] overflow-y-auto bg-slate-100 p-4 shadow-xl transition-transform duration-300 dark:bg-slate-950 lg:sticky lg:inset-y-auto lg:top-[88px] lg:z-auto lg:h-[calc(100vh-120px)] lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:transition-none ${
             drawerOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
@@ -341,6 +402,18 @@ export default function ToolsPage() {
             })}
           </div>
         </aside>
+
+        {/* ── Drag handle to resize the sidebar (desktop only) ── */}
+        <div
+          onMouseDown={startResize}
+          onDoubleClick={() => setSidebarWidth(256)}
+          role="separator"
+          aria-orientation="vertical"
+          title="Drag to resize · double-click to reset"
+          className="group hidden w-2.5 shrink-0 cursor-col-resize items-center justify-center lg:sticky lg:top-[88px] lg:flex lg:h-[calc(100vh-120px)]"
+        >
+          <div className="h-12 w-1 rounded-full bg-slate-300 transition group-hover:h-16 group-hover:w-1.5 group-hover:bg-indigo-400 dark:bg-slate-700 dark:group-hover:bg-indigo-500" />
+        </div>
 
         {/* ── Main: active tool ── */}
         <main className="min-w-0 flex-1">
