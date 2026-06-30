@@ -115,15 +115,19 @@ export default function ToolsPage() {
   // Search query state
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Mobile sidebar drawer
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   // Collapse/Expand state for all categories
   const [expandedCats, setExpandedCats] = useState(() => {
     const activeTool = getTool(toolId);
     return activeTool ? { [activeTool.category]: true } : {};
   });
 
-  // Scroll to top of window when active toolId changes
+  // Scroll to top of window + close the mobile drawer when the tool changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    setDrawerOpen(false);
   }, [toolId]);
 
   // Keep active category expanded on route change
@@ -188,13 +192,50 @@ export default function ToolsPage() {
         <div className="absolute -top-24 right-[10%] h-72 w-72 rounded-full bg-fuchsia-300/20 blur-3xl dark:bg-fuchsia-700/10" />
       </div>
 
+      {/* ── Mobile "browse tools" bar (opens the drawer) ── */}
+      <button
+        type="button"
+        onClick={() => setDrawerOpen(true)}
+        className="mb-4 flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 lg:hidden"
+      >
+        <span className="flex items-center gap-2 truncate">
+          <LayoutGrid size={16} className="shrink-0 text-indigo-500" />
+          <span className="truncate">{active ? active.name : 'Browse tools'}</span>
+        </span>
+        <span className="shrink-0 text-xs font-normal text-indigo-600 dark:text-indigo-400">
+          Change
+        </span>
+      </button>
+
+      {/* ── Drawer backdrop (mobile only) ── */}
+      {drawerOpen && (
+        <div
+          onClick={() => setDrawerOpen(false)}
+          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden"
+        />
+      )}
+
       <div className="flex flex-col gap-6 lg:flex-row">
-        {/* ── Left sidebar ── */}
-        <aside className="lg:sticky lg:top-[88px] lg:h-[calc(100vh-120px)] lg:w-64 lg:shrink-0 lg:overflow-y-auto thin-scroll pr-1 select-none">
+        {/* ── Left sidebar (static on desktop, slide-in drawer on mobile) ── */}
+        <aside
+          className={`thin-scroll fixed inset-y-0 left-0 z-50 w-[19rem] max-w-[85vw] overflow-y-auto bg-slate-100 p-4 shadow-xl transition-transform duration-300 dark:bg-slate-950 lg:sticky lg:inset-y-auto lg:top-[88px] lg:z-auto lg:h-[calc(100vh-120px)] lg:w-64 lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:transition-none ${
+            drawerOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
           <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <h2 className="flex items-center gap-2 px-2 py-2 text-sm font-bold text-slate-800 dark:text-slate-100">
-              <LayoutGrid size={16} /> Tools
-            </h2>
+            <div className="flex items-center justify-between px-2 py-2">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-slate-800 dark:text-slate-100">
+                <LayoutGrid size={16} /> Tools
+              </h2>
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(false)}
+                className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
+                aria-label="Close tools menu"
+              >
+                <X size={16} />
+              </button>
+            </div>
 
             {/* Search Input Box */}
             <div className="relative my-2 px-1">
