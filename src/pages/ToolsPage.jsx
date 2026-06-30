@@ -185,7 +185,7 @@ export default function ToolsPage() {
   const hasResults = Object.keys(groups).length > 0;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+    <div className="mx-auto max-w-[1800px] px-3 py-6 sm:px-5 sm:py-8 lg:px-6">
       {/* Decorative ambient background */}
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-32 left-[12%] h-72 w-72 rounded-full bg-indigo-300/25 blur-3xl dark:bg-indigo-700/15" />
