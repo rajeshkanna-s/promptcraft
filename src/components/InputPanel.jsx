@@ -83,8 +83,11 @@ export default function InputPanel({
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6"
+      className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-lg shadow-indigo-500/5 ring-1 ring-black/[0.02] dark:border-slate-800 dark:bg-slate-900 sm:p-7"
     >
+      {/* Gradient accent strip */}
+      <span className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500" />
+
       {/* Idea input */}
       <label htmlFor="idea" className={labelClass}>
         Your idea
@@ -157,13 +160,13 @@ export default function InputPanel({
                 type="button"
                 onClick={() => onTypeChange(t.id)}
                 aria-pressed={active}
-                className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition ${
+                className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-semibold transition-all duration-150 ${
                   active
-                    ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm'
-                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                    ? '-translate-y-px border-transparent bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/30'
+                    : 'border-slate-200 bg-white text-slate-600 hover:-translate-y-px hover:border-indigo-200 hover:shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-indigo-800 dark:hover:bg-slate-700'
                 }`}
               >
-                <Icon size={16} />
+                <Icon size={17} />
                 {t.label}
               </button>
             );
@@ -225,7 +228,7 @@ export default function InputPanel({
                 aria-pressed={count === n}
                 className={`min-w-[3rem] rounded-lg px-4 py-2 text-sm font-semibold transition ${
                   count === n
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-sm'
                     : 'text-slate-600 hover:bg-white dark:text-slate-300 dark:hover:bg-slate-700'
                 }`}
               >
@@ -247,7 +250,7 @@ export default function InputPanel({
                 title={l.instruction}
                 className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
                   length === l.id
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-sm'
                     : 'text-slate-600 hover:bg-white dark:text-slate-300 dark:hover:bg-slate-700'
                 }`}
               >
@@ -311,8 +314,10 @@ export default function InputPanel({
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-300 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-800"
+          className="group relative inline-flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-indigo-500/40 focus:ring-2 focus:ring-indigo-300 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:ring-indigo-800"
         >
+          {/* shine sweep on hover */}
+          <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
           <Wand2 size={18} className={loading ? 'animate-pulse' : ''} />
           {loading ? 'Generating…' : 'Generate prompts'}
         </button>

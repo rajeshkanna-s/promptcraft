@@ -5,7 +5,7 @@ import ResultEditor from '../components/ResultEditor.jsx';
 import PromptResults from '../components/PromptResults.jsx';
 import LoadingResult from '../components/LoadingResult.jsx';
 import Sidebar from '../components/Sidebar.jsx';
-import { Lightbulb, LayoutGrid, PencilLine, CopyCheck, Check } from 'lucide-react';
+import { Lightbulb, LayoutGrid, PencilLine, CopyCheck, Check, Wand2 } from 'lucide-react';
 import { generatePrompts, enhanceIdea, transformPrompt } from '../lib/api.js';
 import { PROMPT_TYPES } from '../lib/constants.js';
 import {
@@ -230,20 +230,31 @@ export default function GeneratorPage() {
 
   return (
     <>
+      {/* Decorative ambient background */}
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-32 left-[15%] h-72 w-72 rounded-full bg-indigo-300/30 blur-3xl dark:bg-indigo-700/20" />
+        <div className="absolute -top-24 right-[12%] h-72 w-72 rounded-full bg-fuchsia-300/25 blur-3xl dark:bg-fuchsia-700/15" />
+      </div>
+
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Prompt Generator
-            </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Turn a spark into a batch of polished prompts
-            </p>
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-indigo-500/30">
+              <Wand2 size={20} />
+            </span>
+            <div>
+              <h2 className="bg-gradient-to-r from-indigo-600 to-fuchsia-600 bg-clip-text text-2xl font-extrabold tracking-tight text-transparent dark:from-indigo-400 dark:to-fuchsia-400">
+                Prompt Generator
+              </h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Turn a spark into a batch of polished prompts
+              </p>
+            </div>
           </div>
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white/80 px-3 text-sm font-medium text-slate-600 shadow-sm backdrop-blur transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
           >
             <PanelRightOpen size={18} />
             <span className="hidden sm:inline">Library</span>
@@ -341,16 +352,19 @@ export default function GeneratorPage() {
                 )}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/50 px-6 py-16 text-center dark:border-slate-700 dark:bg-slate-900/40">
-                <span className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-500 dark:bg-indigo-950/60 dark:text-indigo-300">
-                  <Lightbulb size={22} />
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/40 px-6 py-16 text-center backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/30">
+                <span className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-indigo-500/30">
+                  <Lightbulb size={24} />
                 </span>
                 <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
-                  No prompts yet
+                  Your prompts will appear here
                 </h3>
                 <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">
                   Type an idea above, pick a type and tone, then hit{' '}
-                  <span className="font-medium text-indigo-600 dark:text-indigo-400">Generate</span>.
+                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                    Generate
+                  </span>
+                  .
                 </p>
               </div>
             )}
