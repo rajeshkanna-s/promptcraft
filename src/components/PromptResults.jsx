@@ -132,8 +132,18 @@ export default function PromptResults({
   onAction,
   busyIndex,
 }) {
+  // Adapt the column count to the number of prompts so a single result is
+  // centered (instead of stranded on the left) and two results sit balanced.
+  const count = prompts.length;
+  const gridClass =
+    count === 1
+      ? 'grid-cols-1 max-w-2xl mx-auto'
+      : count === 2
+        ? 'grid-cols-1 sm:grid-cols-2 max-w-4xl mx-auto'
+        : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3';
+
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div className={`grid gap-4 ${gridClass}`}>
       {prompts.map((text, i) => (
         <PromptCard
           key={i}

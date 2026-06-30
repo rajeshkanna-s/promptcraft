@@ -23,6 +23,7 @@ import {
   TONES,
   LENGTHS,
   CUSTOM_LENGTH,
+  CHARS_PER_TOKEN,
   getOptionChoice,
 } from './constants.js';
 
@@ -83,7 +84,7 @@ const CONFIG = {
  * Build the dynamic system prompt from the selected type + tone.
  * The model is instructed to return ONLY a JSON array of strings.
  */
-export function buildSystemPrompt({ count, type, tone, length, customChars, typeOptions }) {
+export function buildSystemPrompt({ count, type, tone, length, customChars, customUnit, typeOptions }) {
   const { label: typeLabel, requirements } = buildTypeClause(type, typeOptions);
   const toneObj = TONES.find((t) => t.id === tone);
   const toneClause =
@@ -92,13 +93,18 @@ export function buildSystemPrompt({ count, type, tone, length, customChars, type
   // Length controls how long/detailed each prompt should be.
   const lengthObj = LENGTHS.find((l) => l.id === length) || LENGTHS[1];
 
-  // Custom length: target an exact character budget instead of a preset.
+  // Custom length: target an exact budget instead of a preset. The budget can
+  // be expressed in characters or in tokens (converted via CHARS_PER_TOKEN).
+  const chars = clampChars(customChars);
+  const budgetPhrase =
+    customUnit === 'tokens'
+      ? `approximately ${Math.round(chars / CHARS_PER_TOKEN)} tokens (about ${chars} characters)`
+      : `at least ${chars} characters`;
   const lengthInstruction =
     length === 'custom'
-      ? `at least ${clampChars(customChars)} characters long — a thorough, self-contained prompt ` +
-        `packed with concrete, specific detail (subject, setting, mood, style, composition, ` +
-        `constraints, requirements). Keep expanding with relevant detail until you reach that ` +
-        `length; do NOT stop short of ${clampChars(customChars)} characters`
+      ? `${budgetPhrase} long — a thorough, self-contained prompt packed with concrete, specific ` +
+        `detail (subject, setting, mood, style, composition, constraints, requirements). Keep ` +
+        `expanding with relevant detail until you reach that length; do NOT stop short`
       : lengthObj.instruction;
 
   return (
@@ -248,8 +254,8 @@ export function parsePrompts(raw, expectedCount) {
  * Single entry point used by the UI.
  * @returns {Promise<string[]>} array of generated prompt strings
  */
-export async function generatePrompts({ input, count, type, tone, length, customChars, typeOptions }) {
-  const system = buildSystemPrompt({ count, type, tone, length, customChars, typeOptions });
+export async function generatePrompts({ input, count, type, tone, length, customChars, customUnit, typeOptions }) {
+  const system = buildSystemPrompt({ count, type, tone, length, customChars, customUnit, typeOptions });
 
   // Budget tokens by length × count (+headroom for JSON syntax), capped sanely.
   // For custom mode, estimate ~1 token per 3 chars plus a small buffer.

@@ -146,7 +146,12 @@ export const LENGTHS = [
 // Bounds for the custom character-count input.
 // Max is set well above what the "Long" preset produces (~1000-1500 chars),
 // so Custom can always go longer than any preset.
-export const CUSTOM_LENGTH = { min: 50, max: 4000, default: 800 };
+export const CUSTOM_LENGTH = { min: 50, max: 6000, default: 800 };
+
+// Custom length can be expressed in characters or tokens. This rough English
+// estimate (~4 characters per token) converts a token budget into the
+// character target the rest of the app works with.
+export const CHARS_PER_TOKEN = 4;
 
 export const MAX_HISTORY = 20;
 

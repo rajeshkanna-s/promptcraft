@@ -47,6 +47,7 @@ export default function GeneratorPage() {
   const [count, setCount] = useState(3);
   const [length, setLength] = useState('medium');
   const [customChars, setCustomChars] = useState(CUSTOM_LENGTH.default);
+  const [customUnit, setCustomUnit] = useState('chars'); // 'chars' | 'tokens'
 
   // Switching category resets its options to sensible defaults.
   const handleTypeChange = (nextType) => {
@@ -63,7 +64,7 @@ export default function GeneratorPage() {
   const [resultMeta, setResultMeta] = useState({ input: '', type: 'text', tone: 'none' });
   const [instantReveal, setInstantReveal] = useState(false); // skip typewriter for history reloads
   const [busyIndex, setBusyIndex] = useState(-1); // which card is running a per-prompt action
-  const [view, setView] = useState('cards'); // 'cards' | 'editor'
+  const [view, setView] = useState('editor'); // 'editor' | 'cards' — Editor is the default view
   const [copiedAll, setCopiedAll] = useState(false);
 
   // ── Persisted collections ──
@@ -86,7 +87,7 @@ export default function GeneratorPage() {
   }, [loading]);
 
   const runGeneration = async (overrides = {}) => {
-    const opts = { input, type, typeOptions, tone, count, length, customChars, ...overrides };
+    const opts = { input, type, typeOptions, tone, count, length, customChars, customUnit, ...overrides };
     const idea = opts.input.trim();
 
     if (!idea) {
@@ -106,6 +107,7 @@ export default function GeneratorPage() {
         tone: opts.tone,
         length: opts.length,
         customChars: opts.customChars,
+        customUnit: opts.customUnit,
       });
       setPrompts(result);
       setInstantReveal(false); // animate freshly generated prompts
@@ -116,6 +118,7 @@ export default function GeneratorPage() {
         tone: opts.tone,
         length: opts.length,
         customChars: opts.customChars,
+        customUnit: opts.customUnit,
         count: opts.count,
       });
 
@@ -129,6 +132,7 @@ export default function GeneratorPage() {
         count: opts.count,
         length: opts.length,
         customChars: opts.customChars,
+        customUnit: opts.customUnit,
         prompts: result,
       };
       setHistory(saveBatch(batch));
@@ -203,6 +207,7 @@ export default function GeneratorPage() {
     setCount(batch.count);
     setLength(batch.length || 'medium');
     setCustomChars(batch.customChars || CUSTOM_LENGTH.default);
+    setCustomUnit(batch.customUnit || 'chars');
     setPrompts(batch.prompts);
     setInstantReveal(true); // show history instantly, no typewriter
     setResultMeta({
@@ -212,6 +217,7 @@ export default function GeneratorPage() {
       tone: batch.tone,
       length: batch.length || 'medium',
       customChars: batch.customChars || CUSTOM_LENGTH.default,
+      customUnit: batch.customUnit || 'chars',
       count: batch.count,
     });
     setError('');
@@ -277,6 +283,8 @@ export default function GeneratorPage() {
             setLength={setLength}
             customChars={customChars}
             setCustomChars={setCustomChars}
+            customUnit={customUnit}
+            setCustomUnit={setCustomUnit}
             onGenerate={handleGenerate}
             onRegenerate={handleRegenerate}
             onEnhance={handleEnhance}

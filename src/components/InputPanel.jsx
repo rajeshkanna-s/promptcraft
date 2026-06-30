@@ -6,6 +6,7 @@ import {
   COUNT_OPTIONS,
   LENGTHS,
   CUSTOM_LENGTH,
+  CHARS_PER_TOKEN,
 } from '../lib/constants.js';
 
 // Icon per category, keyed by id.
@@ -50,6 +51,8 @@ export default function InputPanel({
   setLength,
   customChars,
   setCustomChars,
+  customUnit,
+  setCustomUnit,
   onGenerate,
   onRegenerate,
   onEnhance,
@@ -261,42 +264,86 @@ export default function InputPanel({
         </div>
       </div>
 
-      {/* Custom length input — only when "Custom" is selected */}
-      {length === 'custom' && (
-        <div className="mt-4">
-          <label htmlFor="customChars" className={labelClass}>
-            Target characters per prompt (max {CUSTOM_LENGTH.max})
-          </label>
-          <div className="flex items-center gap-3">
-            <input
-              id="customChars"
-              type="range"
-              min={CUSTOM_LENGTH.min}
-              max={CUSTOM_LENGTH.max}
-              step={10}
-              value={customChars}
-              onChange={(e) => setCustomChars(Number(e.target.value))}
-              className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-slate-200 accent-indigo-600 dark:bg-slate-700"
-            />
-            <input
-              type="number"
-              min={CUSTOM_LENGTH.min}
-              max={CUSTOM_LENGTH.max}
-              value={customChars}
-              onChange={(e) => setCustomChars(Number(e.target.value))}
-              // Clamp into range when the field loses focus.
-              onBlur={(e) => {
-                const v = Number(e.target.value) || CUSTOM_LENGTH.default;
-                setCustomChars(
-                  Math.min(CUSTOM_LENGTH.max, Math.max(CUSTOM_LENGTH.min, Math.round(v))),
-                );
-              }}
-              className="w-24 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:ring-indigo-900"
-            />
-            <span className="text-sm text-slate-400 dark:text-slate-500">chars</span>
+      {/* Custom length input — only when "Custom" is selected.
+          The budget can be set in characters or tokens; characters stay the
+          canonical value, tokens are converted via CHARS_PER_TOKEN. */}
+      {length === 'custom' && (() => {
+        const isTokens = customUnit === 'tokens';
+        const toDisplay = (chars) =>
+          isTokens ? Math.round(chars / CHARS_PER_TOKEN) : chars;
+        const toChars = (val) => (isTokens ? val * CHARS_PER_TOKEN : val);
+        const bounds = {
+          min: toDisplay(CUSTOM_LENGTH.min),
+          max: toDisplay(CUSTOM_LENGTH.max),
+        };
+        const displayValue = toDisplay(customChars);
+        const commit = (val) =>
+          setCustomChars(
+            Math.min(
+              CUSTOM_LENGTH.max,
+              Math.max(CUSTOM_LENGTH.min, Math.round(toChars(val))),
+            ),
+          );
+        return (
+          <div className="mt-4">
+            <div className="mb-1.5 flex items-center justify-between gap-2">
+              <label htmlFor="customChars" className={`${labelClass} mb-0`}>
+                Target {isTokens ? 'tokens' : 'characters'} per prompt (max {bounds.max})
+              </label>
+              {/* Unit toggle: characters ⇄ tokens */}
+              <div className="inline-flex shrink-0 rounded-lg border border-slate-200 bg-slate-50 p-0.5 dark:border-slate-700 dark:bg-slate-800">
+                {[
+                  { id: 'chars', label: 'Chars' },
+                  { id: 'tokens', label: 'Tokens' },
+                ].map((u) => (
+                  <button
+                    key={u.id}
+                    type="button"
+                    onClick={() => setCustomUnit(u.id)}
+                    aria-pressed={customUnit === u.id}
+                    className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${
+                      customUnit === u.id
+                        ? 'bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-sm'
+                        : 'text-slate-500 hover:bg-white dark:text-slate-400 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    {u.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                id="customChars"
+                type="range"
+                min={bounds.min}
+                max={bounds.max}
+                step={isTokens ? 5 : 10}
+                value={displayValue}
+                onChange={(e) => commit(Number(e.target.value))}
+                className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-slate-200 accent-indigo-600 dark:bg-slate-700"
+              />
+              <input
+                type="number"
+                min={bounds.min}
+                max={bounds.max}
+                value={displayValue}
+                onChange={(e) => commit(Number(e.target.value))}
+                onBlur={(e) => commit(Number(e.target.value) || toDisplay(CUSTOM_LENGTH.default))}
+                className="w-24 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-500 dark:focus:ring-indigo-900"
+              />
+              <span className="text-sm text-slate-400 dark:text-slate-500">
+                {isTokens ? 'tokens' : 'chars'}
+              </span>
+            </div>
+            <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+              {isTokens
+                ? `≈ ${displayValue * CHARS_PER_TOKEN} characters`
+                : `≈ ${Math.round(displayValue / CHARS_PER_TOKEN)} tokens`}
+            </p>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Inline error */}
       {error && (
