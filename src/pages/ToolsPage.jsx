@@ -5,6 +5,8 @@ import {
   Search,
   X,
   ChevronDown,
+  PanelLeftClose,
+  PanelLeftOpen,
   Youtube,
   PenLine,
   FileText,
@@ -118,9 +120,11 @@ export default function ToolsPage() {
   // Mobile sidebar drawer
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // ── Resizable sidebar (desktop only) ──
+  // ── Resizable + collapsible sidebar (desktop only) ──
   const SIDEBAR_MIN = 200;
   const SIDEBAR_MAX = 560;
+  const COLLAPSE_AT = 150; // dragging narrower than this snaps to the icon rail
+  const RAIL_WIDTH = 64;
   const [isDesktop, setIsDesktop] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches,
   );
@@ -128,12 +132,22 @@ export default function ToolsPage() {
     const saved = Number(localStorage.getItem('promptcraft.toolsSidebarWidth'));
     return saved >= SIDEBAR_MIN && saved <= SIDEBAR_MAX ? saved : 256;
   });
+  const [collapsed, setCollapsed] = useState(
+    () => localStorage.getItem('promptcraft.toolsSidebarCollapsed') === '1',
+  );
   const rowRef = useRef(null);
   const resizingRef = useRef(false);
   const widthRef = useRef(sidebarWidth);
+  const collapsedRef = useRef(collapsed);
   useEffect(() => {
     widthRef.current = sidebarWidth;
   }, [sidebarWidth]);
+  useEffect(() => {
+    collapsedRef.current = collapsed;
+  }, [collapsed]);
+
+  // Effective desktop width: the icon rail when collapsed, else the dragged width.
+  const effectiveWidth = collapsed ? RAIL_WIDTH : sidebarWidth;
 
   // Track the lg breakpoint so the drag-width only applies on desktop.
   useEffect(() => {
@@ -148,9 +162,18 @@ export default function ToolsPage() {
     const onMove = (e) => {
       if (!resizingRef.current || !rowRef.current) return;
       const left = rowRef.current.getBoundingClientRect().left;
-      const w = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, e.clientX - left));
-      widthRef.current = w;
-      setSidebarWidth(w);
+      const raw = e.clientX - left;
+      if (raw < COLLAPSE_AT) {
+        // Dragged too far left → collapse to the icon rail.
+        collapsedRef.current = true;
+        setCollapsed(true);
+      } else {
+        const w = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, raw));
+        widthRef.current = w;
+        collapsedRef.current = false;
+        setCollapsed(false);
+        setSidebarWidth(w);
+      }
     };
     const onUp = () => {
       if (!resizingRef.current) return;
@@ -159,6 +182,7 @@ export default function ToolsPage() {
       document.body.style.cursor = '';
       try {
         localStorage.setItem('promptcraft.toolsSidebarWidth', String(Math.round(widthRef.current)));
+        localStorage.setItem('promptcraft.toolsSidebarCollapsed', collapsedRef.current ? '1' : '0');
       } catch {
         /* ignore */
       }
@@ -176,6 +200,18 @@ export default function ToolsPage() {
     resizingRef.current = true;
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'col-resize';
+  };
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('promptcraft.toolsSidebarCollapsed', next ? '1' : '0');
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
   };
 
   // Collapse/Expand state for all categories
@@ -278,24 +314,79 @@ export default function ToolsPage() {
       <div ref={rowRef} className="flex flex-col gap-6 lg:flex-row lg:gap-1">
         {/* ── Left sidebar (static on desktop, slide-in drawer on mobile) ── */}
         <aside
-          style={isDesktop ? { width: sidebarWidth } : undefined}
+          style={isDesktop ? { width: effectiveWidth } : undefined}
           className={`thin-scroll fixed inset-y-0 left-0 z-50 w-[19rem] max-w-[85vw] overflow-y-auto bg-slate-100 p-4 shadow-xl transition-transform duration-300 dark:bg-slate-950 lg:sticky lg:inset-y-auto lg:top-[88px] lg:z-auto lg:h-[calc(100vh-120px)] lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:transition-none ${
             drawerOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
+          {isDesktop && collapsed ? (
+            /* ── Collapsed icon rail ── */
+            <div className="rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <button
+                type="button"
+                onClick={toggleCollapsed}
+                title="Expand sidebar"
+                aria-label="Expand sidebar"
+                className="mx-auto mb-1 flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <PanelLeftOpen size={18} />
+              </button>
+              <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+              <div className="flex flex-col items-center gap-1">
+                {Object.entries(groups).map(([category, tools]) => {
+                  const hasActive = tools.some((t) => t.id === toolId);
+                  return (
+                    <button
+                      key={category}
+                      type="button"
+                      title={category}
+                      onClick={() => {
+                        toggleCollapsed();
+                        setExpandedCats((prev) => ({ ...prev, [category]: true }));
+                      }}
+                      className={`flex h-10 w-10 items-center justify-center rounded-xl transition ${
+                        hasActive
+                          ? 'bg-indigo-600 text-white shadow-sm'
+                          : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <span
+                        className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${
+                          hasActive ? 'text-white' : getCategoryColor(category)
+                        }`}
+                      >
+                        {getCategoryIcon(category)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
           <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <div className="flex items-center justify-between px-2 py-2">
               <h2 className="flex items-center gap-2 text-sm font-bold text-slate-800 dark:text-slate-100">
                 <LayoutGrid size={16} /> Tools
               </h2>
-              <button
-                type="button"
-                onClick={() => setDrawerOpen(false)}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
-                aria-label="Close tools menu"
-              >
-                <X size={16} />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={toggleCollapsed}
+                  title="Collapse to icons"
+                  aria-label="Collapse sidebar"
+                  className="hidden h-7 w-7 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 lg:inline-flex"
+                >
+                  <PanelLeftClose size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDrawerOpen(false)}
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
+                  aria-label="Close tools menu"
+                >
+                  <X size={16} />
+                </button>
+              </div>
             </div>
 
             {/* Search Input Box */}
@@ -401,12 +492,22 @@ export default function ToolsPage() {
               );
             })}
           </div>
+          )}
         </aside>
 
         {/* ── Drag handle to resize the sidebar (desktop only) ── */}
         <div
           onMouseDown={startResize}
-          onDoubleClick={() => setSidebarWidth(256)}
+          onDoubleClick={() => {
+            setSidebarWidth(256);
+            setCollapsed(false);
+            try {
+              localStorage.setItem('promptcraft.toolsSidebarWidth', '256');
+              localStorage.setItem('promptcraft.toolsSidebarCollapsed', '0');
+            } catch {
+              /* ignore */
+            }
+          }}
           role="separator"
           aria-orientation="vertical"
           title="Drag to resize · double-click to reset"
