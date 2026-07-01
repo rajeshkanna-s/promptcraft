@@ -1,10 +1,85 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { generateText } from '../lib/api.js';
 import { mdToHtml } from '../lib/markdown.js';
 import ResultEditor from '../components/ResultEditor.jsx';
 import LoadingResult from '../components/LoadingResult.jsx';
 import { ToolHeader, ToolError, ToolFormCard, fieldClass, labelClass } from './ToolShell.jsx';
+
+// Row of overlapping color dots that preview a swatch option.
+function Swatches({ colors }) {
+  return (
+    <span className="flex shrink-0 -space-x-1.5">
+      {colors.map((c, i) => (
+        <span
+          key={i}
+          className="h-5 w-5 rounded-full border border-white shadow-sm dark:border-slate-800"
+          style={{ background: c }}
+        />
+      ))}
+    </span>
+  );
+}
+
+// A dropdown whose trigger and options both show their colors clearly.
+function SwatchSelect({ id, value, onChange, options, placeholder }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    const onDoc = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, []);
+  const selected = options.find((o) => o.value === value);
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        id={id}
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className={`${fieldClass} flex items-center justify-between gap-2 text-left`}
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          {selected ? <Swatches colors={selected.colors} /> : null}
+          <span className="truncate">{selected ? selected.label : placeholder || 'Select…'}</span>
+        </span>
+        <ChevronDown
+          size={16}
+          className={`shrink-0 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {open && (
+        <div className="mt-2 grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:grid-cols-3">
+          {options.map((o) => {
+            const active = o.value === value;
+            return (
+              <button
+                key={o.value}
+                type="button"
+                onClick={() => {
+                  onChange(o.value);
+                  setOpen(false);
+                }}
+                aria-pressed={active}
+                className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-xs font-medium transition ${
+                  active
+                    ? 'border-indigo-500 ring-2 ring-indigo-200 dark:ring-indigo-900'
+                    : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'
+                }`}
+              >
+                <Swatches colors={o.colors} />
+                <span className="truncate text-slate-700 dark:text-slate-200">{o.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Generic, config-driven tool. Most simple "fill a form → get AI output" tools
@@ -33,10 +108,44 @@ export default function FormTool({ config }) {
 
   const set = (name, v) => setValues((prev) => ({ ...prev, [name]: v }));
 
-  const mainFields = fields.filter((f) => !f.advanced);
-  const advFields = fields.filter((f) => f.advanced);
+  // A field can declare `showIf: (values) => boolean` to appear conditionally.
+  const isVisible = (f) => !f.showIf || f.showIf(values);
+  const mainFields = fields.filter((f) => !f.advanced && isVisible(f));
+  const advFields = fields.filter((f) => f.advanced && isVisible(f));
 
   const renderControl = (f) => {
+    // Datalist: a text input with preset suggestions AND free custom entry.
+    if (f.type === 'datalist') {
+      return (
+        <>
+          <input
+            id={`f-${f.name}`}
+            list={`dl-${f.name}`}
+            value={values[f.name]}
+            onChange={(e) => set(f.name, e.target.value)}
+            placeholder={f.placeholder}
+            className={fieldClass}
+          />
+          <datalist id={`dl-${f.name}`}>
+            {f.options.map((o) => (
+              <option key={o} value={o} />
+            ))}
+          </datalist>
+        </>
+      );
+    }
+    // Swatch: a dropdown whose trigger + options show their colors clearly.
+    if (f.type === 'swatch') {
+      return (
+        <SwatchSelect
+          id={`f-${f.name}`}
+          value={values[f.name]}
+          onChange={(v) => set(f.name, v)}
+          options={f.options}
+          placeholder={f.placeholder}
+        />
+      );
+    }
     if (f.type === 'select') {
       return (
         <select
@@ -91,7 +200,9 @@ export default function FormTool({ config }) {
 
   const submit = async (e) => {
     e?.preventDefault();
-    const missing = fields.find((f) => f.required && !String(values[f.name] ?? '').trim());
+    const missing = fields.find(
+      (f) => isVisible(f) && f.required && !String(values[f.name] ?? '').trim(),
+    );
     if (missing) {
       setError(missing.requiredMsg || `Please fill in “${missing.label}”.`);
       return;
@@ -115,10 +226,12 @@ export default function FormTool({ config }) {
       <ToolHeader icon={icon} title={title} description={description} />
 
       <ToolFormCard onSubmit={submit}>
-        {/* Numbered main fields */}
-        <div className="space-y-5">
-          {mainFields.map((f, i) => (
-            <div key={f.name}>
+        {/* Numbered main fields — 2-column horizontal grid; wide fields span both */}
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          {mainFields.map((f, i) => {
+            const wide = f.full || f.type === 'textarea' || f.type === 'swatch';
+            return (
+            <div key={f.name} className={wide ? 'sm:col-span-2' : ''}>
               <label htmlFor={`f-${f.name}`} className="mb-1.5 flex items-center gap-2">
                 <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[11px] font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
                   {i + 1}
@@ -135,7 +248,8 @@ export default function FormTool({ config }) {
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Advanced settings (optional) */}

@@ -23,6 +23,8 @@ import {
   Code2,
   TrendingUp,
   BookOpenText,
+  MonitorSmartphone,
+  Wrench,
 } from 'lucide-react';
 import { TOOLS, getTool, firstAvailableTool } from '../tools/registry.js';
 
@@ -63,6 +65,10 @@ const getCategoryColor = (category) => {
       return 'bg-violet-100 text-violet-600 dark:bg-violet-950/60 dark:text-violet-400';
     case 'Website Content':
       return 'bg-sky-100 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400';
+    case 'Website Builder':
+      return 'bg-cyan-100 text-cyan-600 dark:bg-cyan-950/60 dark:text-cyan-400';
+    case 'Utilities':
+      return 'bg-teal-100 text-teal-600 dark:bg-teal-950/60 dark:text-teal-400';
     default:
       return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
   }
@@ -105,6 +111,10 @@ const getCategoryIcon = (category) => {
       return <BookOpenText size={11} />;
     case 'Website Content':
       return <Globe size={11} />;
+    case 'Website Builder':
+      return <MonitorSmartphone size={11} />;
+    case 'Utilities':
+      return <Wrench size={11} />;
     default:
       return <LayoutGrid size={11} />;
   }

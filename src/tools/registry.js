@@ -1,8 +1,10 @@
-import { PenLine, FileText, Wand2, BookOpen } from 'lucide-react';
+import { PenLine, FileText, Wand2, BookOpen, Calculator, QrCode } from 'lucide-react';
 import BlogWriter from './BlogWriter.jsx';
 import Summarizer from './Summarizer.jsx';
 import TextHumanizer from './TextHumanizer.jsx';
 import StorybookCreator from './StorybookCreator.jsx';
+import TokenCalculator from './TokenCalculator.jsx';
+import QRCodeGenerator from './QRCodeGenerator.jsx';
 import { YOUTUBE_TOOLS } from './youtubeTools.jsx';
 import { REWRITING_TOOLS } from './rewritingTools.jsx';
 import { SEO_TOOLS } from './seoTools.jsx';
@@ -17,6 +19,7 @@ import { CODE_TOOLS } from './codeTools.jsx';
 import { MARKETING_TOOLS } from './marketingTools.jsx';
 import { BOOK_WRITING_TOOLS } from './bookWritingTools.jsx';
 import { WEB_CONTENT_TOOLS } from './webContentTools.jsx';
+import { WEBSITE_TOOLS } from './websiteTools.jsx';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tool registry
@@ -93,6 +96,27 @@ export const TOOLS = [
   ...BOOK_WRITING_TOOLS,
   // ── Website Content (config-driven, see webContentTools.jsx) ──
   ...WEB_CONTENT_TOOLS,
+  // ── Website Builder (config-driven, see websiteTools.jsx) ──
+  ...WEBSITE_TOOLS,
+  // ── Utilities (client-side, no AI) ──
+  {
+    id: 'token-calculator',
+    name: 'Token Calculator',
+    description: 'Estimate tokens, characters and words from pasted text or a .txt / .md file',
+    category: 'Utilities',
+    icon: Calculator,
+    component: TokenCalculator,
+    available: true,
+  },
+  {
+    id: 'qr-code-generator',
+    name: 'QR Code Generator',
+    description: 'Turn any URL or text into a QR code and download it as PNG, JPG or PDF',
+    category: 'Utilities',
+    icon: QrCode,
+    component: QRCodeGenerator,
+    available: true,
+  },
 ];
 
 export const getTool = (id) => TOOLS.find((t) => t.id === id);
