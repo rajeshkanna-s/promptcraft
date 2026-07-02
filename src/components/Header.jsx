@@ -1,4 +1,4 @@
-import { Sparkles, Wand2, LayoutGrid } from 'lucide-react';
+import { Sparkles, Wand2, LayoutGrid, LayoutTemplate } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle.jsx';
 
@@ -26,6 +26,10 @@ export default function Header() {
           <NavLink to="/" end className={navClass}>
             <Wand2 size={16} />
             <span className="hidden sm:inline">Generator</span>
+          </NavLink>
+          <NavLink to="/templates" className={navClass}>
+            <LayoutTemplate size={16} />
+            <span className="hidden sm:inline">Templates</span>
           </NavLink>
           <NavLink to="/tools" className={navClass}>
             <LayoutGrid size={16} />

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PanelRightOpen } from 'lucide-react';
 import InputPanel from '../components/InputPanel.jsx';
 import ResultEditor from '../components/ResultEditor.jsx';
@@ -16,6 +17,7 @@ import {
   saveFavorites,
 } from '../lib/storage.js';
 import { CUSTOM_LENGTH, defaultTypeOptions } from '../lib/constants.js';
+import { useSeo } from '../lib/seo.js';
 
 const escapeHtml = (s) =>
   s
@@ -39,6 +41,12 @@ function promptsToHtml(prompts, meta) {
 
 // The original PromptCraft prompt-generator, now a routed page at "/".
 export default function GeneratorPage() {
+  useSeo({
+    description:
+      'Free AI prompt generator — turn a short idea into a batch of high-quality, ready-to-use prompts for ChatGPT, Claude, images and video. Plus 100+ free AI tools.',
+    path: '/',
+  });
+
   // ── Input state ──
   const [input, setInput] = useState('');
   const [type, setType] = useState('text');
@@ -85,6 +93,21 @@ export default function GeneratorPage() {
       resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [loading]);
+
+  // Prefill from a template link (/?idea=…&type=…&tone=…), once on mount.
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const idea = searchParams.get('idea');
+    if (idea) setInput(idea);
+    const t = searchParams.get('type');
+    if (t && PROMPT_TYPES.some((p) => p.id === t)) {
+      setType(t);
+      setTypeOptions(defaultTypeOptions(t));
+    }
+    const tn = searchParams.get('tone');
+    if (tn) setTone(tn);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const runGeneration = async (overrides = {}) => {
     const opts = { input, type, typeOptions, tone, count, length, customChars, customUnit, ...overrides };
@@ -356,7 +379,7 @@ export default function GeneratorPage() {
                     busyIndex={busyIndex}
                   />
                 ) : (
-                  <ResultEditor content={promptsToHtml(prompts, resultMeta)} />
+                  <ResultEditor content={promptsToHtml(prompts, resultMeta)} enableRefine={false} />
                 )}
               </div>
             ) : (

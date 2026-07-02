@@ -1,8 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-// HashRouter keeps deep links working on static hosting (GitHub Pages, etc.)
-// without server-side rewrite rules.
-import { HashRouter } from 'react-router-dom';
+// BrowserRouter gives clean, indexable URLs (/tools/blog-writer) so each tool
+// can rank in search. The host must serve index.html for all routes — see
+// public/_redirects (Netlify) for the SPA fallback.
+import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import './index.css';
@@ -10,9 +11,9 @@ import './index.css';
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ThemeProvider>
-      <HashRouter>
+      <BrowserRouter>
         <App />
-      </HashRouter>
+      </BrowserRouter>
     </ThemeProvider>
   </React.StrictMode>,
 );

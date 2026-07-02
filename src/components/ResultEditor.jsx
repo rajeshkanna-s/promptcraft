@@ -28,7 +28,23 @@ import {
   Check,
   Download,
   Sparkles,
+  Wand2,
+  Loader2,
+  Globe,
+  ChevronDown,
 } from 'lucide-react';
+import { generateText } from '../lib/api.js';
+import { mdToHtml } from '../lib/markdown.js';
+import { LANGUAGES } from '../tools/ToolShell.jsx';
+
+// Instructions for each one-click refinement.
+const REFINEMENTS = [
+  ['Shorter', 'Rewrite the following to be significantly shorter and more concise, keeping the key meaning.'],
+  ['Longer', 'Expand the following with more relevant detail and depth, keeping the same intent.'],
+  ['More formal', 'Rewrite the following in a more formal, professional tone.'],
+  ['More casual', 'Rewrite the following in a more casual, friendly tone.'],
+  ['Fix grammar', 'Fix any grammar, spelling and punctuation and improve clarity, without changing the meaning.'],
+];
 
 // One toolbar button.
 function TBtn({ onClick, active, disabled, title, children }) {
@@ -210,10 +226,13 @@ export default function ResultEditor({
   title = 'Your Result',
   filename = 'promptcraft',
   placeholder = 'Your generated content will appear here…',
+  enableRefine = true,
 }) {
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [stats, setStats] = useState({ words: 0, chars: 0 });
+  const [refining, setRefining] = useState(false);
+  const [transOpen, setTransOpen] = useState(false);
   const lastContent = useRef(null);
   const containerRef = useRef(null);
 
@@ -307,8 +326,35 @@ export default function ResultEditor({
     URL.revokeObjectURL(url);
   };
 
+  // One-click AI refinement of the current content.
+  const refine = async (instruction) => {
+    if (!editor || refining) return;
+    const text = editor.getText().trim();
+    if (!text) return;
+    setTransOpen(false);
+    setRefining(true);
+    try {
+      const out = await generateText({
+        system: `You are an expert editor. ${instruction} Output ONLY the resulting text in clean Markdown — no preamble, no explanation, no quotes.`,
+        user: text,
+        maxTokens: 3000,
+        temperature: 0.6,
+      });
+      const html = mdToHtml(out.trim());
+      editor.commands.setContent(html);
+      lastContent.current = html;
+      computeStats(editor);
+    } catch {
+      /* leave content unchanged on error */
+    } finally {
+      setRefining(false);
+    }
+  };
+
   const btnClass =
     'inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-indigo-700 dark:hover:text-indigo-300';
+  const refineBtn =
+    'inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 transition hover:border-indigo-300 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-indigo-600 dark:hover:text-indigo-300';
 
   return (
     <div ref={containerRef} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md ring-1 ring-black/[0.02] dark:border-slate-800 dark:bg-slate-900">
@@ -364,6 +410,55 @@ export default function ResultEditor({
           </div>
         </div>
       </div>
+
+      {/* AI Refine bar */}
+      {enableRefine && (
+        <div className="flex flex-wrap items-center gap-1.5 border-b border-slate-200 bg-indigo-50/40 px-3 py-2 dark:border-slate-800 dark:bg-indigo-950/20">
+          <span className="mr-1 inline-flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+            <Wand2 size={13} /> Refine
+          </span>
+          {REFINEMENTS.map(([label, instruction]) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => refine(instruction)}
+              disabled={refining}
+              className={refineBtn}
+            >
+              {label}
+            </button>
+          ))}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setTransOpen((o) => !o)}
+              disabled={refining}
+              className={refineBtn}
+            >
+              <Globe size={13} /> Translate <ChevronDown size={12} />
+            </button>
+            {transOpen && (
+              <div className="absolute left-0 z-20 mt-1 max-h-56 w-40 overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
+                {LANGUAGES.map((l) => (
+                  <button
+                    key={l}
+                    type="button"
+                    onClick={() => refine(`Translate the following into ${l}, preserving meaning and formatting.`)}
+                    className="block w-full px-3 py-1.5 text-left text-xs font-medium text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-700 dark:text-slate-300 dark:hover:bg-slate-700"
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {refining && (
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-indigo-500">
+              <Loader2 size={13} className="animate-spin" /> Refining…
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Toolbar */}
       <Toolbar editor={editor} />

@@ -25,8 +25,14 @@ import {
   BookOpenText,
   MonitorSmartphone,
   Wrench,
+  Mail,
+  Briefcase,
+  Building2,
+  Languages,
+  NotebookPen,
 } from 'lucide-react';
 import { TOOLS, getTool, firstAvailableTool } from '../tools/registry.js';
+import { useSeo } from '../lib/seo.js';
 
 // Category color backgrounds for side menu icons
 const getCategoryColor = (category) => {
@@ -69,6 +75,16 @@ const getCategoryColor = (category) => {
       return 'bg-cyan-100 text-cyan-600 dark:bg-cyan-950/60 dark:text-cyan-400';
     case 'Utilities':
       return 'bg-teal-100 text-teal-600 dark:bg-teal-950/60 dark:text-teal-400';
+    case 'Email Tools':
+      return 'bg-rose-100 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400';
+    case 'Career Tools':
+      return 'bg-blue-100 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400';
+    case 'Business Tools':
+      return 'bg-amber-100 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400';
+    case 'Study Tools':
+      return 'bg-green-100 text-green-600 dark:bg-green-950/60 dark:text-green-400';
+    case 'Language Tools':
+      return 'bg-violet-100 text-violet-600 dark:bg-violet-950/60 dark:text-violet-400';
     default:
       return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
   }
@@ -115,6 +131,16 @@ const getCategoryIcon = (category) => {
       return <MonitorSmartphone size={11} />;
     case 'Utilities':
       return <Wrench size={11} />;
+    case 'Email Tools':
+      return <Mail size={11} />;
+    case 'Career Tools':
+      return <Briefcase size={11} />;
+    case 'Business Tools':
+      return <Building2 size={11} />;
+    case 'Study Tools':
+      return <NotebookPen size={11} />;
+    case 'Language Tools':
+      return <Languages size={11} />;
     default:
       return <LayoutGrid size={11} />;
   }
@@ -264,6 +290,17 @@ export default function ToolsPage() {
     }
     return grouped;
   }, [filteredTools]);
+
+  // Per-tool SEO (title / description / canonical). Runs unconditionally as a
+  // hook, before any early return.
+  const seoTool = getTool(toolId);
+  useSeo({
+    title: seoTool ? `${seoTool.name} · Free Online Tool` : 'AI Tools',
+    description: seoTool
+      ? seoTool.description
+      : 'A suite of 100+ free AI tools for writing, SEO, YouTube, code, marketing, images and more.',
+    path: toolId ? `/tools/${toolId}` : '/tools',
+  });
 
   // All hooks run above this point — safe to bail out now.
   // If no toolId is present in path, redirect to the first available one.

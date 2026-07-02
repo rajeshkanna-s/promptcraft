@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header.jsx';
 import GeneratorPage from './pages/GeneratorPage.jsx';
 import ToolsPage from './pages/ToolsPage.jsx';
+import TemplatesPage from './pages/TemplatesPage.jsx';
 
 // App shell: shared header + routed pages.
 export default function App() {
@@ -11,6 +12,7 @@ export default function App() {
 
       <Routes>
         <Route path="/" element={<GeneratorPage />} />
+        <Route path="/templates" element={<TemplatesPage />} />
         <Route path="/tools" element={<ToolsPage />} />
         <Route path="/tools/:toolId" element={<ToolsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />

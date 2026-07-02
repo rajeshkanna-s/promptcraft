@@ -1,10 +1,37 @@
-import { PenLine, FileText, Wand2, BookOpen, Calculator, QrCode } from 'lucide-react';
+import {
+  PenLine,
+  FileText,
+  Wand2,
+  BookOpen,
+  Calculator,
+  QrCode,
+  CaseSensitive,
+  Type,
+  AlignLeft,
+  KeyRound,
+  Binary,
+  Braces,
+  Palette,
+  ImageDown,
+  FileCode2,
+  Fingerprint,
+} from 'lucide-react';
 import BlogWriter from './BlogWriter.jsx';
 import Summarizer from './Summarizer.jsx';
 import TextHumanizer from './TextHumanizer.jsx';
 import StorybookCreator from './StorybookCreator.jsx';
 import TokenCalculator from './TokenCalculator.jsx';
 import QRCodeGenerator from './QRCodeGenerator.jsx';
+import CaseConverter from './utilities/CaseConverter.jsx';
+import WordCounter from './utilities/WordCounter.jsx';
+import LoremIpsum from './utilities/LoremIpsum.jsx';
+import PasswordGenerator from './utilities/PasswordGenerator.jsx';
+import EncoderDecoder from './utilities/EncoderDecoder.jsx';
+import JsonFormatter from './utilities/JsonFormatter.jsx';
+import ColorPalette from './utilities/ColorPalette.jsx';
+import ImageCompressor from './utilities/ImageCompressor.jsx';
+import MarkdownConverter from './utilities/MarkdownConverter.jsx';
+import UuidGenerator from './utilities/UuidGenerator.jsx';
 import { YOUTUBE_TOOLS } from './youtubeTools.jsx';
 import { REWRITING_TOOLS } from './rewritingTools.jsx';
 import { SEO_TOOLS } from './seoTools.jsx';
@@ -20,6 +47,11 @@ import { MARKETING_TOOLS } from './marketingTools.jsx';
 import { BOOK_WRITING_TOOLS } from './bookWritingTools.jsx';
 import { WEB_CONTENT_TOOLS } from './webContentTools.jsx';
 import { WEBSITE_TOOLS } from './websiteTools.jsx';
+import { EMAIL_TOOLS } from './emailTools.jsx';
+import { CAREER_TOOLS } from './careerTools.jsx';
+import { BUSINESS_TOOLS } from './businessTools.jsx';
+import { STUDY_TOOLS } from './studyTools.jsx';
+import { LANGUAGE_TOOLS } from './languageTools.jsx';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tool registry
@@ -98,6 +130,16 @@ export const TOOLS = [
   ...WEB_CONTENT_TOOLS,
   // ── Website Builder (config-driven, see websiteTools.jsx) ──
   ...WEBSITE_TOOLS,
+  // ── Email Tools (config-driven, see emailTools.jsx) ──
+  ...EMAIL_TOOLS,
+  // ── Career Tools (config-driven, see careerTools.jsx) ──
+  ...CAREER_TOOLS,
+  // ── Business Tools (config-driven, see businessTools.jsx) ──
+  ...BUSINESS_TOOLS,
+  // ── Study Tools (config-driven, see studyTools.jsx) ──
+  ...STUDY_TOOLS,
+  // ── Language Tools (config-driven, see languageTools.jsx) ──
+  ...LANGUAGE_TOOLS,
   // ── Utilities (client-side, no AI) ──
   {
     id: 'token-calculator',
@@ -115,6 +157,96 @@ export const TOOLS = [
     category: 'Utilities',
     icon: QrCode,
     component: QRCodeGenerator,
+    available: true,
+  },
+  {
+    id: 'case-converter',
+    name: 'Case Converter',
+    description: 'Convert text to UPPERCASE, lowercase, Title Case, camelCase, snake_case and more',
+    category: 'Utilities',
+    icon: CaseSensitive,
+    component: CaseConverter,
+    available: true,
+  },
+  {
+    id: 'word-counter',
+    name: 'Word & Character Counter',
+    description: 'Count words, characters, sentences, paragraphs and reading time in real time',
+    category: 'Utilities',
+    icon: Type,
+    component: WordCounter,
+    available: true,
+  },
+  {
+    id: 'lorem-ipsum-generator',
+    name: 'Lorem Ipsum Generator',
+    description: 'Generate placeholder text — paragraphs, sentences or words — for mockups',
+    category: 'Utilities',
+    icon: AlignLeft,
+    component: LoremIpsum,
+    available: true,
+  },
+  {
+    id: 'password-generator',
+    name: 'Password Generator',
+    description: 'Generate strong, random passwords securely in your browser',
+    category: 'Utilities',
+    icon: KeyRound,
+    component: PasswordGenerator,
+    available: true,
+  },
+  {
+    id: 'base64-url-encoder',
+    name: 'Base64 & URL Encoder / Decoder',
+    description: 'Encode or decode text with Base64 or URL (percent) encoding, instantly',
+    category: 'Utilities',
+    icon: Binary,
+    component: EncoderDecoder,
+    available: true,
+  },
+  {
+    id: 'json-formatter',
+    name: 'JSON Formatter & Validator',
+    description: 'Beautify, minify and validate JSON with clear error messages',
+    category: 'Utilities',
+    icon: Braces,
+    component: JsonFormatter,
+    available: true,
+  },
+  {
+    id: 'color-palette-generator',
+    name: 'Color Palette Generator',
+    description: 'Generate beautiful color palettes and copy hex codes with one click',
+    category: 'Utilities',
+    icon: Palette,
+    component: ColorPalette,
+    available: true,
+  },
+  {
+    id: 'image-compressor',
+    name: 'Image Compressor & Resizer',
+    description: 'Shrink and resize JPG, PNG or WebP images locally — no server upload',
+    category: 'Utilities',
+    icon: ImageDown,
+    component: ImageCompressor,
+    available: true,
+  },
+  {
+    id: 'markdown-to-html',
+    name: 'Markdown to HTML Converter',
+    description: 'Convert Markdown to clean HTML with a live preview and copyable output',
+    category: 'Utilities',
+    icon: FileCode2,
+    component: MarkdownConverter,
+    available: true,
+  },
+  {
+    id: 'uuid-generator',
+    name: 'UUID Generator',
+    description: 'Generate random version-4 UUIDs and copy them individually or all at once',
+    category: 'Utilities',
+    icon: Fingerprint,
+    component: UuidGenerator,
     available: true,
   },
 ];
